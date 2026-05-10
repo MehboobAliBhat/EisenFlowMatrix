@@ -274,13 +274,13 @@
               ondrop={() => handleDrop(q.id)}
             >
               <header class="quadrant-header" style="background: var(--q-header); margin: -12px -12px 12px; padding: 10px 12px;">
-                <div class="q-title" style="color: {q.id === 4 ? '#ffffff' : 'var(--q-color)'}">
+                <div class="q-title" style="color: var(--q-color)">
                   <q.icon size={16} stroke-width={3} />
                   <h3>{q.title}</h3>
                 </div>
-                <div class="q-meta" style="color: {q.id === 4 ? '#ffffff' : 'var(--q-color)'}">
+                <div class="q-meta" style="color: var(--q-color)">
                   {#if q.id === 4 && getTasks(4).length > 0}
-                    <button class="purge-btn industrial-hover" onclick={purgeVoid} style="background: #ffffff; color: var(--color-q4)">Purge</button>
+                    <button class="purge-btn industrial-hover" onclick={purgeVoid} style="background: var(--color-q4); color: #ffffff">Purge</button>
                   {/if}
                   <span style="opacity: 0.8">{q.sub}</span>
                 </div>
