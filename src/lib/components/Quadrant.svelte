@@ -109,6 +109,20 @@
     border-bottom: 1px solid rgba(0,0,0,0.05);
   }
 
+  @media (max-width: 640px) {
+    .quadrant-header {
+      padding: 8px 10px;
+    }
+    
+    .q-title h3 {
+      font-size: 12px;
+    }
+
+    .sub-label {
+      display: none;
+    }
+  }
+
   .q-title {
     display: flex;
     align-items: center;

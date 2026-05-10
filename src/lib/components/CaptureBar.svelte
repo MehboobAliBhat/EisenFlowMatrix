@@ -152,6 +152,34 @@
     padding: 0 12px;
   }
 
+  @media (max-width: 640px) {
+    .console-inner {
+      height: 48px;
+      padding: 0 8px;
+    }
+    
+    .console-left {
+      padding-right: 8px;
+    }
+    
+    .input-section {
+      padding: 0 8px;
+    }
+    
+    .console-right {
+      padding-left: 8px;
+    }
+
+    .q-label {
+      display: none;
+    }
+    
+    .target-btn {
+      padding: 0 8px;
+      gap: 0;
+    }
+  }
+
   .console-left {
     display: flex;
     align-items: center;
@@ -188,7 +216,8 @@
     background: transparent;
     border: none;
     outline: none;
-    font-size: 15px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
     font-weight: 600;
     color: var(--text-primary);
     letter-spacing: -0.01em;
@@ -196,8 +225,19 @@
   }
 
   .input-section input:focus {
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 15px;
+  }
+
+  .char-counter {
+    position: absolute;
+    right: 0;
+    bottom: -14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    font-weight: 800;
+    color: var(--active-q-color);
+    opacity: 0.4;
+    transition: opacity 0.2s;
   }
 
   .kbd-hint {

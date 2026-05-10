@@ -11,12 +11,15 @@
 - [x] Variable-based Dark/Light mode with zero flicker
 - [x] JSON Data Export & Import features
 - [x] **Industrial UI:** High-density, sharp-edged aesthetic with professional hover states
-- [x] **Design Specifications:** Formalized in `DESIGN_SPECS.md`
-- [x] **Icon Standardization:** Frozen choice on Lucide-Svelte with semantic sizes
-- [x] **Collapsible Sidebar:** Functional Icon-only mode with immediate hydration sync
+- [x] **Terminology Update:** Renamed Void to Archive, Handoff to Delegate, and All Tasks to Dashboard
+- [x] **Capture Bar Refinement:** Stabilized success feedback (no flicker) and optimized layout
+- [x] **Search & Navigation:** Enhanced Topbar search (JetBrains Mono) and refined precision buttons
+- [x] **Keyboard Shortcuts:** Industrial mappings (`/` for Capture, `F` for Find/Search, `Alt+T` for Theme)
+- [x] **Mobile Optimization:** Responsive stacked matrix layout and touch-optimized components
+- [x] **Collapsible Sidebar:** Functional Icon-only mode with tablet auto-collapse logic
 
 ## 🚧 Current (In Progress)
-- [ ] **Mobile Optimization:** Refining the industrial themes for smaller touch screens
+- [ ] **Data Integrity:** Enhancing localStorage sync across multiple tabs/windows
 
 ## 🔮 Future Enhancements
 - [ ] **Drag and Drop:** Native browser drag-and-drop improvements

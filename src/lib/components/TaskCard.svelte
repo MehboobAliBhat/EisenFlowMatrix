@@ -10,18 +10,48 @@
   const currentQuadrant = $derived(QUADRANTS.find(q => q.id === task.quadrant));
   const otherQuadrants = $derived(QUADRANTS.filter(q => q.id !== task.quadrant));
 
+  let isEditing = $state(false);
+  let editText = $state(task.text);
+  let editInput: HTMLInputElement;
+
   function handleDragStart(e: DragEvent) {
+    if (isEditing) return;
     if (e.dataTransfer) {
       e.dataTransfer.setData("taskId", task.id);
       e.dataTransfer.effectAllowed = "move";
     }
+  }
+
+  function startEditing() {
+    editText = task.text;
+    isEditing = true;
+    setTimeout(() => editInput?.focus(), 0);
+  }
+
+  function saveEdit() {
+    if (editText.trim() && editText !== task.text) {
+      task.text = editText.trim();
+      taskService.save();
+    }
+    isEditing = false;
+  }
+
+  function cancelEdit() {
+    isEditing = false;
+    editText = task.text;
+  }
+
+  function handleKeydown(e: KeyboardEvent) {
+    if (e.key === 'Enter') saveEdit();
+    if (e.key === 'Escape') cancelEdit();
   }
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div 
   class="task-card industrial-hover" 
-  draggable="true" 
+  class:editing={isEditing}
+  draggable={!isEditing}
   ondragstart={handleDragStart}
   style="--q-color: var({currentQuadrant?.var || '--color-primary'})"
 >
@@ -31,7 +61,25 @@
       color={currentQuadrant?.var ? `var(${currentQuadrant.var})` : 'var(--color-primary)'}
       onchange={() => taskService.save()}
     />
-    <span class="task-text" class:completed={task.completed}>{task.text}</span>
+    
+    {#if isEditing}
+      <input
+        bind:this={editInput}
+        bind:value={editText}
+        onblur={saveEdit}
+        onkeydown={handleKeydown}
+        class="edit-input"
+      />
+    {:else}
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <span 
+        class="task-text" 
+        class:completed={task.completed}
+        onclick={startEditing}
+      >
+        {task.text}
+      </span>
+    {/if}
   </div>
   
   <div class="task-actions">
@@ -93,6 +141,24 @@
   .task-text.completed {
     text-decoration: line-through;
     opacity: 0.4;
+  }
+
+  .edit-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: var(--font-size-task, 12px);
+    font-weight: 600;
+    color: var(--text-primary);
+    padding: 0;
+    margin: 0;
+    width: 100%;
+  }
+
+  .task-card.editing {
+    border-color: var(--q-color);
+    background: var(--bg-app);
   }
 
   .task-actions {

@@ -22,6 +22,15 @@
     min-height: 0;
   }
 
+  @media (max-width: 768px) {
+    .matrix-grid {
+      grid-template-columns: 1fr;
+      grid-template-rows: repeat(4, 1fr);
+      overflow-y: auto;
+      padding-bottom: 20px;
+    }
+  }
+
   /* Handle full-width view when only one quadrant is filtered */
   :global(.matrix-grid:has(> section:only-of-type)) {
     grid-template-columns: 1fr;

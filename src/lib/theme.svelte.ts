@@ -3,13 +3,13 @@ import type { ThemeDefinition } from './types';
 
 const DEFAULT_THEMES: ThemeDefinition[] = [
   {
-    id: 'industrial-classic',
-    name: 'Workbench (Industrial)',
+    id: 'elite-workbench',
+    name: 'Elite Workbench',
     colors: {
-      primary: '#2563eb',
-      q1: '#dc2626',
-      q2: '#2563eb',
-      q3: '#d97706',
+      primary: '#0055ff',
+      q1: '#ff0000',
+      q2: '#0055ff',
+      q3: '#ff8800',
       q4: '#475569'
     },
     layout: {
@@ -21,32 +21,32 @@ const DEFAULT_THEMES: ThemeDefinition[] = [
     }
   },
   {
-    id: 'modern-soft',
-    name: 'The Studio (Modern)',
+    id: 'midnight-neon',
+    name: 'Midnight Neon',
     colors: {
-      primary: '#8b5cf6',
-      q1: '#f43f5e',
-      q2: '#0ea5e9',
-      q3: '#f59e0b',
-      q4: '#6366f1'
+      primary: '#00ffcc',
+      q1: '#ff0055',
+      q2: '#00ccff',
+      q3: '#ffcc00',
+      q4: '#94a3b8'
     },
     layout: {
-      radius: 12,
-      gap: 12,
-      cardPadding: 14,
-      cardHeight: 46,
-      fontSize: 14
+      radius: 0,
+      gap: 10,
+      cardPadding: 12,
+      cardHeight: 42,
+      fontSize: 13
     }
   },
   {
-    id: 'laws-of-ux',
-    name: 'The Architect (Swiss)',
+    id: 'swiss-architect',
+    name: 'Swiss Architect',
     colors: {
-      primary: '#0055FF',
-      q1: '#000000',
-      q2: '#0055FF',
+      primary: '#000000',
+      q1: '#ff0000',
+      q2: '#0000ff',
       q3: '#333333',
-      q4: '#999999'
+      q4: '#777777'
     },
     layout: {
       radius: 0,
@@ -57,50 +57,32 @@ const DEFAULT_THEMES: ThemeDefinition[] = [
     }
   },
   {
-    id: 'material-m3',
-    name: 'The System (M3)',
+    id: 'paper-high-contrast',
+    name: 'Paper (High Contrast)',
     colors: {
-      primary: '#6750A4',
-      q1: '#B3261E',
-      q2: '#0061A4',
-      q3: '#625B71',
-      q4: '#7D5260'
+      primary: '#111111',
+      q1: '#990000',
+      q2: '#003399',
+      q3: '#663300',
+      q4: '#333333'
     },
     layout: {
-      radius: 24,
-      gap: 14,
-      cardPadding: 16,
-      cardHeight: 52,
-      fontSize: 15
+      radius: 0,
+      gap: 8,
+      cardPadding: 14,
+      cardHeight: 46,
+      fontSize: 14
     }
   },
   {
-    id: 'nord-polar',
-    name: 'Nord Polar',
+    id: 'github-dark-elite',
+    name: 'GitHub Elite',
     colors: {
-      primary: '#88C0D0',
-      q1: '#BF616A',
-      q2: '#81A1C1',
-      q3: '#EBCB8B',
-      q4: '#4C566A'
-    },
-    layout: {
-      radius: 6,
-      gap: 10,
-      cardPadding: 10,
-      cardHeight: 42,
-      fontSize: 13
-    }
-  },
-  {
-    id: 'github-primer',
-    name: 'Primer (GitHub)',
-    colors: {
-      primary: '#0969da',
-      q1: '#cf222e',
-      q2: '#0969da',
-      q3: '#9a6700',
-      q4: '#6e7781'
+      primary: '#2f81f7',
+      q1: '#f85149',
+      q2: '#2f81f7',
+      q3: '#d29922',
+      q4: '#8b949e'
     },
     layout: {
       radius: 6,
@@ -109,12 +91,30 @@ const DEFAULT_THEMES: ThemeDefinition[] = [
       cardHeight: 38,
       fontSize: 13
     }
+  },
+  {
+    id: 'crimson-industrial',
+    name: 'Crimson Slate',
+    colors: {
+      primary: '#e11d48',
+      q1: '#e11d48',
+      q2: '#2563eb',
+      q3: '#ea580c',
+      q4: '#334155'
+    },
+    layout: {
+      radius: 0,
+      gap: 4,
+      cardPadding: 8,
+      cardHeight: 32,
+      fontSize: 11
+    }
   }
 ];
 
 class ThemeService {
   themes = $state<ThemeDefinition[]>([]);
-  activeThemeId = $state('industrial-classic');
+  activeThemeId = $state('elite-workbench');
   
   activeTheme = $derived(
     this.themes.find(t => t.id === this.activeThemeId) || DEFAULT_THEMES[0]

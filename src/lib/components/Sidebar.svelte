@@ -106,8 +106,23 @@
     flex-direction: column;
     position: relative;
     transition: width 0.4s var(--spring-easing);
-    z-index: 30;
+    z-index: 60;
     height: 100%;
+  }
+
+  @media (max-width: 1024px) {
+    .sidebar {
+      width: var(--sidebar-collapsed-width);
+    }
+    
+    .sidebar:not(.collapsed-force) .nav-label,
+    .sidebar:not(.collapsed-force) .brand,
+    .sidebar:not(.collapsed-force) .nav-count,
+    .sidebar:not(.collapsed-force) .velocity-container,
+    .sidebar:not(.collapsed-force) .trash-label,
+    .sidebar:not(.collapsed-force) .footer-btn span {
+      display: none;
+    }
   }
 
   .sidebar-header { padding: 24px 20px 32px; overflow: hidden; }
@@ -257,8 +272,27 @@
   :global(.sidebar-collapsed) .trash-label { display: none; }
 
   .footer-actions { border-top: 1px solid var(--border-color); padding-top: 4px; }
-  .footer-btn { width: 100%; display: flex; align-items: center; gap: 16px; padding: 8px 16px; font-size: 13px; color: var(--text-muted); border: 1px solid transparent; transition: all var(--transition-base); border-radius: var(--radius); }
-  .footer-btn:hover { color: var(--color-error); }
+  .footer-btn { 
+    width: 100%; 
+    display: flex; 
+    align-items: center; 
+    gap: 16px; 
+    padding: 10px 16px; 
+    font-size: 13px; 
+    font-weight: 600;
+    color: var(--text-secondary); 
+    border: 1px solid transparent; 
+    transition: all var(--transition-base); 
+    border-radius: var(--radius); 
+    text-align: left;
+  }
+  .footer-btn:hover { 
+    background: var(--bg-app);
+    color: var(--color-error); 
+  }
+  .footer-btn:last-child:hover {
+    color: var(--color-primary);
+  }
   :global(.sidebar-collapsed) .footer-btn span { display: none; }
 
   .toggle-btn {
@@ -273,9 +307,10 @@
     align-items: center;
     justify-content: center;
     color: var(--text-secondary);
-    z-index: 40;
+    z-index: 100;
     opacity: 0;
     transition: opacity var(--transition-base);
+    border-radius: var(--radius);
   }
   .sidebar:hover .toggle-btn, :global(.sidebar-collapsed) .toggle-btn { opacity: 1; }
 </style>

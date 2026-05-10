@@ -6,13 +6,28 @@
   import SettingsModal from "$lib/components/SettingsModal.svelte";
 
   function handleGlobalKeydown(e: KeyboardEvent) {
-    // Focus search/capture with '/'
-    if (e.key === '/' && document.activeElement?.tagName !== 'INPUT') {
+    const isInputActive = document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA';
+
+    // 1. Focus Capture with '/' (Restored original behavior)
+    if (e.key === '/' && !isInputActive) {
       e.preventDefault();
-      const input = document.querySelector('.input-section input') as HTMLInputElement;
-      input?.focus();
+      const captureInput = document.querySelector('.input-section input') as HTMLInputElement;
+      captureInput?.focus();
     }
-    // Toggle theme with 'Alt + T'
+
+    // 2. Focus Search with 'f'
+    if (e.key.toLowerCase() === 'f' && !isInputActive) {
+      e.preventDefault();
+      const searchInput = document.querySelector('.top-search-input') as HTMLInputElement;
+      searchInput?.focus();
+    }
+
+    // 3. Clear focus with 'Escape'
+    if (e.key === 'Escape') {
+      (document.activeElement as HTMLElement)?.blur();
+    }
+
+    // 4. Toggle theme with 'Alt + T'
     if (e.altKey && e.key === 't') {
       import('$lib/tasks.svelte').then(m => m.taskService.toggleTheme());
     }
