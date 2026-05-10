@@ -333,22 +333,18 @@
     background-color: var(--bg-app);
   }
 
-  /* Universal Industrial Hover Behavior (Zero Shadow, Stable Outline) */
+  /* Universal Industrial Hover Behavior (Zero Shadow, Static, Stable Outline) */
   .industrial-hover {
-    transition: transform 0.1s ease, background-color 0.2s, outline-color 0.2s !important;
+    transition: background-color 0.2s, outline-color 0.2s !important;
     outline: 1px solid transparent;
   }
   .industrial-hover:hover {
-    transform: translateY(-1px);
     outline-color: currentColor !important;
     background-color: var(--bg-surface) !important;
     z-index: 10;
   }
   .dark .industrial-hover:hover {
     background-color: rgba(255, 255, 255, 0.08) !important;
-  }
-  .industrial-hover:active {
-    transform: translateY(0);
   }
 
   /* Specific Stable Colored Outlines */
@@ -365,15 +361,16 @@
   }
 
   .industrial-hover-subtle {
-    transition: transform 0.1s ease, color 0.2s !important;
+    transition: color 0.2s !important;
   }
   .industrial-hover-subtle:hover {
-    transform: scale(1.15);
     color: var(--color-primary) !important;
   }
   .industrial-hover-subtle.delete:hover {
     color: var(--color-error) !important;
   }
+
+  .add-task-btn:hover { opacity: 1; }
 
   /* Sidebar */
   .sidebar {
