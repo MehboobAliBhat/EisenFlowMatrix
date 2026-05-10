@@ -140,18 +140,18 @@
   });
 
   const quadrants = [
-    { id: 1, label: 'DO', title: 'DO', sub: 'URGENT & IMPORTANT', icon: Zap, var: '--color-q1' },
-    { id: 2, label: 'PLAN', title: 'PLAN', sub: 'IMPORTANT & NOT URGENT', icon: Calendar, var: '--color-q2' },
-    { id: 3, label: 'HANDOFF', title: 'HANDOFF', sub: 'URGENT & NOT IMPORTANT', icon: Repeat, var: '--color-q3' },
-    { id: 4, label: 'VOID', title: 'VOID', sub: 'NEITHER URGENT NOR IMPORTANT', icon: Archive, var: '--color-q4' }
+    { id: 1, label: 'DO', title: 'DO', sub: 'URGENT & IMPORTANT', icon: Zap, var: '--color-q1', soft: '--color-q1-soft' },
+    { id: 2, label: 'PLAN', title: 'PLAN', sub: 'IMPORTANT & NOT URGENT', icon: Calendar, var: '--color-q2', soft: '--color-q2-soft' },
+    { id: 3, label: 'HANDOFF', title: 'HANDOFF', sub: 'URGENT & NOT IMPORTANT', icon: Repeat, var: '--color-q3', soft: '--color-q3-soft' },
+    { id: 4, label: 'VOID', title: 'VOID', sub: 'NEITHER URGENT NOR IMPORTANT', icon: Archive, var: '--color-q4', soft: '--color-q4-soft' }
   ];
 
   const sidebarLinks = [
-    { id: 'all', label: 'All Tasks', icon: ClipboardList, var: '--color-q1' },
-    { id: '1', label: 'Do', icon: Zap, var: '--color-q1' },
-    { id: '2', label: 'Plan', icon: Calendar, var: '--color-q2' },
-    { id: '3', label: 'Handoff', icon: Repeat, var: '--color-q3' },
-    { id: '4', label: 'Void', icon: Archive, var: '--color-q4' }
+    { id: 'all', label: 'All Tasks', icon: ClipboardList, var: '--color-q1', soft: '--color-q1-soft' },
+    { id: '1', label: 'Do', icon: Zap, var: '--color-q1', soft: '--color-q1-soft' },
+    { id: '2', label: 'Plan', icon: Calendar, var: '--color-q2', soft: '--color-q2-soft' },
+    { id: '3', label: 'Handoff', icon: Repeat, var: '--color-q3', soft: '--color-q3-soft' },
+    { id: '4', label: 'Void', icon: Archive, var: '--color-q4', soft: '--color-q4-soft' }
   ];
 
   function getTasks(id: number) { return filteredTasks().filter(t => t.quadrant === id).sort((a,b) => b.timestamp - a.timestamp); }
@@ -160,7 +160,7 @@
 <div class="app-container">
   <aside class="sidebar" class:collapsed={isSidebarCollapsed}>
     <button class="toggle-btn" onclick={() => isSidebarCollapsed = !isSidebarCollapsed}>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
         <path d={isSidebarCollapsed ? "m9 18 6-6-6-6" : "m15 18-6-6 6-6"}/>
       </svg>
     </button>
@@ -175,12 +175,12 @@
     <nav class="sidebar-nav">
       {#each sidebarLinks as link}
         <button 
-          class="nav-item" 
+          class="nav-item sidebar-btn" 
           class:active={activeFilter === link.id}
           onclick={() => activeFilter = link.id}
-          style="--item-color: var({link.var})"
+          style="--item-color: var({link.var}); --item-bg-active: var({link.soft})"
         >
-          <link.icon size={18} class="nav-icon" />
+          <link.icon size={18} class="nav-icon" style="color: var({link.var})" />
           <span class="nav-label">{link.label}</span>
         </button>
       {/each}
@@ -199,11 +199,11 @@
       </div>
 
       <div class="footer-actions">
-        <button class="footer-btn" onclick={clearCompleted}>
+        <button class="footer-btn sidebar-btn" onclick={clearCompleted}>
           <Eraser size={16} />
           <span>Clear Done</span>
         </button>
-        <button class="footer-btn">
+        <button class="footer-btn sidebar-btn">
           <Settings size={16} />
           <span>Settings</span>
         </button>
@@ -253,7 +253,7 @@
                 class:active={selectedQuadrant === q.id}
                 onclick={() => selectedQuadrant = q.id}
               >{q.label}</button>
-            {/each}
+            {#/each}
           </div>
         </div>
         <div class="capture-accent" style="background: var(--color-q{selectedQuadrant})"></div>
@@ -264,7 +264,7 @@
           {#if activeFilter === 'all' || activeFilter === q.id.toString()}
             <section 
               class="quadrant" 
-              style="--q-color: var({q.var})"
+              style="--q-color: var({q.var}); --q-soft: var({q.soft})"
               class:dim={q.id === 4}
               class:drag-over={dragOverQuadrantId === q.id}
               ondragover={(e) => { e.preventDefault(); handleDragOver(q.id); }}
@@ -332,6 +332,7 @@
     display: flex;
     height: 100vh;
     width: 100vw;
+    overflow: hidden;
   }
 
   /* Sidebar */
@@ -344,10 +345,11 @@
     position: relative;
     transition: width 0.3s ease;
     z-index: 30;
+    height: 100%;
   }
 
   .sidebar-header {
-    padding: 32px 24px 40px;
+    padding: 24px 20px 32px;
     overflow: hidden;
   }
 
@@ -361,43 +363,44 @@
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 12px 16px;
-    margin-bottom: 4px;
+    padding: 10px 16px;
+    margin-bottom: 2px;
     transition: background 0.2s, color 0.2s;
     color: var(--text-secondary);
     text-align: left;
   }
 
   .nav-item.active {
-    background: var(--bg-surface);
+    background: var(--item-bg-active);
     color: var(--text-primary);
     font-weight: 700;
   }
 
-  .nav-item:hover {
-    background: rgba(0, 0, 0, 0.03);
-    color: var(--item-color);
+  .sidebar-btn:hover {
+    background-color: rgba(0, 0, 0, 0.04) !important;
   }
-  .dark .nav-item:hover { background: rgba(255, 255, 255, 0.03); }
+  :global(.dark) .sidebar-btn:hover {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+  }
 
-  .nav-icon { color: var(--item-color); opacity: 0.7; }
+  .nav-icon { color: var(--item-color); opacity: 0.8; transition: opacity 0.2s; }
   .nav-item:hover .nav-icon, .nav-item.active .nav-icon { opacity: 1; }
 
-  .nav-label { font-size: 14px; font-medium: 500; transition: opacity 0.3s; }
+  .nav-label { font-size: 13px; font-weight: 600; transition: opacity 0.3s; }
   .collapsed .nav-label, .collapsed .brand { opacity: 0; pointer-events: none; }
 
   .sidebar-footer { padding: 12px; border-top: 1px solid var(--border-color); }
   
   .trash-zone {
     border: 2px dashed var(--border-color);
-    padding: 24px 16px;
+    padding: 20px 16px;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 8px;
     color: var(--text-muted);
     transition: all 0.2s;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
 
   .trash-zone.drag-over {
@@ -409,26 +412,26 @@
 
   .trash-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; }
   .collapsed .trash-label { display: none; }
-  .collapsed .trash-zone { padding: 16px 8px; }
+  .collapsed .trash-zone { padding: 12px 8px; }
 
-  .footer-actions { border-top: 1px solid var(--border-color); padding-top: 8px; }
+  .footer-actions { border-top: 1px solid var(--border-color); padding-top: 4px; }
   .footer-btn {
     width: 100%;
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 10px 16px;
+    padding: 8px 16px;
     font-size: 13px;
     color: var(--text-muted);
     transition: color 0.2s, background 0.2s;
   }
-  .footer-btn:hover { color: var(--color-error); background: rgba(0,0,0,0.02); }
+  .footer-btn:hover { color: var(--color-error); }
   .collapsed .footer-btn span { display: none; }
 
   .toggle-btn {
     position: absolute;
     right: -12px;
-    top: 40px;
+    top: 32px;
     width: 24px;
     height: 24px;
     background: var(--bg-surface);
@@ -441,26 +444,28 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     z-index: 40;
     opacity: 0;
+    transition: opacity 0.2s;
   }
   .sidebar:hover .toggle-btn, .collapsed .toggle-btn { opacity: 1; }
 
   /* Main Content */
-  .main-content { flex: 1; display: flex; flex-direction: column; }
+  .main-content { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
   
   .topbar {
     height: var(--header-height);
-    padding: 0 24px;
+    padding: 0 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
   }
 
   .search-box {
     background: var(--bg-surface);
     border: 1px solid var(--outline-color);
-    padding: 0 12px;
-    height: 32px;
+    padding: 0 10px;
+    height: 28px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -470,14 +475,14 @@
     border: none;
     outline: none;
     font-size: 11px;
-    width: 160px;
+    width: 140px;
     color: var(--text-primary);
   }
 
-  .topbar-right { display: flex; align-items: center; gap: 8px; }
+  .topbar-right { display: flex; align-items: center; gap: 6px; }
   .icon-btn {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -487,20 +492,20 @@
   }
   .icon-btn:hover { color: var(--color-primary); border-color: var(--color-primary); }
 
-  .data-actions { display: flex; border-left: 1px solid var(--outline-color); margin-left: 8px; }
+  .data-actions { display: flex; border-left: 1px solid var(--outline-color); margin-left: 6px; }
 
   /* Content */
-  .content-area { padding: 24px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+  .content-area { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
 
-  .capture-bar { background: var(--bg-surface); border: 1px solid var(--outline-color); position: relative; }
+  .capture-bar { background: var(--bg-surface); border: 1px solid var(--outline-color); position: relative; flex-shrink: 0; }
   .capture-inner { height: var(--capture-height); display: flex; align-items: center; padding: 0 16px; gap: 12px; }
   .capture-inner input { flex: 1; background: transparent; border: none; outline: none; font-size: 14px; font-weight: 500; color: var(--text-primary); }
   .capture-accent { height: 2px; transition: background 0.3s; }
 
   .capture-targets { display: flex; gap: 4px; }
   .target-btn {
-    padding: 0 12px;
-    height: 28px;
+    padding: 0 10px;
+    height: 26px;
     border: 1px solid var(--outline-color);
     font-size: 9px;
     font-weight: 700;
@@ -513,7 +518,7 @@
   .matrix-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; min-height: 0; }
   
   .quadrant {
-    background: var(--q-color-soft, rgba(0,0,0,0.02));
+    background: var(--q-soft);
     padding: 12px;
     display: flex;
     flex-direction: column;
@@ -524,10 +529,10 @@
   .quadrant.dim { opacity: 0.5; filter: grayscale(1); }
   .quadrant.drag-over { border: 2px solid var(--q-color); }
 
-  .quadrant-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .quadrant-header { display: flex; justify-content: space-between; margin-bottom: 8px; flex-shrink: 0; }
   .q-title { display: flex; align-items: center; gap: 8px; color: var(--q-color); }
   .q-title h3 { font-size: 14px; font-weight: 900; letter-spacing: 0.1em; }
-  .q-meta { display: flex; align-items: center; gap: 8px; color: var(--q-color); opacity: 0.4; }
+  .q-meta { display: flex; align-items: center; gap: 6px; color: var(--q-color); opacity: 0.4; }
   .q-meta span { font-size: 7px; font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase; }
 
   .purge-btn { font-size: 7px; font-weight: 900; background: var(--color-error); color: white; padding: 2px 6px; }
@@ -541,17 +546,17 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 12px;
+    padding: 0 10px;
     margin-bottom: 4px;
     cursor: grab;
     transition: transform 0.1s;
   }
   .task-card:hover { transform: translateY(-1px); border-color: var(--text-secondary); }
-  .task-left { display: flex; align-items: center; gap: 10px; }
+  .task-left { display: flex; align-items: center; gap: 8px; }
   .task-text { font-size: 12px; font-weight: 600; color: var(--text-primary); }
   .task-text.completed { text-decoration: line-through; opacity: 0.4; }
 
-  .task-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.2s; }
+  .task-actions { display: flex; gap: 2px; opacity: 0; transition: opacity 0.2s; }
   .task-card:hover .task-actions { opacity: 1; }
   
   .action-btn { padding: 4px; color: var(--text-muted); }
@@ -580,11 +585,12 @@
     font-weight: 700;
     color: var(--q-color);
     opacity: 0.8;
+    flex-shrink: 0;
   }
   .add-task-btn:hover { transform: translateX(2px); opacity: 1; }
 
   .empty-state {
-    height: 40px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;

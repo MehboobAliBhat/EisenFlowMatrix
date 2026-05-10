@@ -11,19 +11,19 @@
   
   /* Quadrant Colors */
   --color-q1: #FF5F5F;
-  --color-q1-soft: rgba(255, 95, 95, 0.05);
+  --color-q1-soft: #FFF1F1;
   --color-q1-header: #FFD6D6;
   
   --color-q2: #5F9FFF;
-  --color-q2-soft: rgba(95, 159, 255, 0.05);
+  --color-q2-soft: #F1F7FF;
   --color-q2-header: #D6E8FF;
   
   --color-q3: #FFB35F;
-  --color-q3-soft: rgba(255, 179, 95, 0.05);
+  --color-q3-soft: #FFF9F1;
   --color-q3-header: #FFEDD6;
   
   --color-q4: #A0A0A0;
-  --color-q4-soft: rgba(160, 160, 160, 0.05);
+  --color-q4-soft: #F8F8F8;
   --color-q4-header: #E5E5E5;
 
   --color-error: #BA1A1A;
@@ -33,26 +33,26 @@
   /* Layout Constants */
   --sidebar-width: 240px;
   --sidebar-collapsed-width: 70px;
-  --header-height: 44px;
+  --header-height: 40px;
   --capture-height: 40px;
-  --card-height: 36px;
+  --card-height: 34px;
 }
 
 .dark {
   /* System Colors - Dark Mode */
-  --bg-app: #191B23;
+  --bg-app: #121419;
   --bg-sidebar: #1F2937;
-  --bg-surface: rgba(255, 255, 255, 0.03);
+  --bg-surface: rgba(255, 255, 255, 0.05);
   --text-primary: #FFFFFF;
   --text-secondary: #A8A8B5;
   --text-muted: #94A3B8;
   --border-color: #374151;
   --outline-color: #2E3039;
 
-  --color-q1-soft: rgba(255, 95, 95, 0.1);
-  --color-q2-soft: rgba(95, 159, 255, 0.1);
-  --color-q3-soft: rgba(255, 179, 95, 0.1);
-  --color-q4-soft: rgba(255, 255, 255, 0.05);
+  --color-q1-soft: rgba(255, 95, 95, 0.08);
+  --color-q2-soft: rgba(95, 159, 255, 0.08);
+  --color-q3-soft: rgba(255, 179, 95, 0.08);
+  --color-q4-soft: rgba(255, 255, 255, 0.03);
 }
 
 /* Base resets */
