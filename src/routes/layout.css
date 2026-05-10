@@ -1,58 +1,62 @@
 :root {
-  /* System Colors - Light Mode */
-  --bg-app: #FAFAFA;
-  --bg-sidebar: #FCFCFC;
-  --bg-surface: #FFFFFF;
-  --text-primary: #1F2937;
-  --text-secondary: #A8A8B5;
-  --text-muted: #8B95A7;
-  --border-color: #ECECEC;
-  --outline-color: #EEEEEE;
+  /* Surface & Brand (Pixel-perfect from uirev1.png) */
+  --bg-app: #f4f7f9;
+  --bg-sidebar: #ffffff;
+  --bg-surface: #ffffff;
+  --text-primary: #1e264f;
+  --text-secondary: #8b95a7;
+  --text-muted: #b8b8c3;
+  --border-color: #e5e9f0;
+  --outline-color: #f0f2f5;
   
-  /* Quadrant Colors */
-  --color-q1: #FF5F5F;
-  --color-q1-soft: #FFF1F1;
-  --color-q1-header: #FFD6D6;
+  /* Quadrant 1 (DO) - Red Spectrum */
+  --color-q1: #ff5252;
+  --color-q1-soft: #fff5f5;
+  --color-q1-header: #ffebeb;
   
-  --color-q2: #5F9FFF;
-  --color-q2-soft: #F1F7FF;
-  --color-q2-header: #D6E8FF;
+  /* Quadrant 2 (PLAN) - Blue Spectrum */
+  --color-q2: #448aff;
+  --color-q2-soft: #f0f7ff;
+  --color-q2-header: #e3f2fd;
   
-  --color-q3: #FFB35F;
-  --color-q3-soft: #FFF9F1;
-  --color-q3-header: #FFEDD6;
+  /* Quadrant 3 (HANDOFF) - Orange Spectrum */
+  --color-q3: #ffa726;
+  --color-q3-soft: #fffaf2;
+  --color-q3-header: #fff3e0;
   
-  --color-q4: #A0A0A0;
-  --color-q4-soft: #F8F8F8;
-  --color-q4-header: #E5E5E5;
+  /* Quadrant 4 (VOID) - Gray Spectrum */
+  --color-q4: #90a4ae;
+  --color-q4-soft: #f8f9fa;
+  --color-q4-header: #eceff1;
 
-  --color-error: #BA1A1A;
-  --color-error-soft: rgba(186, 26, 26, 0.1);
-  --color-primary: #5F6FFF;
+  --color-error: #ff5252;
+  --color-error-soft: rgba(255, 82, 82, 0.1);
+  --color-primary: #448aff;
 
-  /* Layout Constants */
+  /* High-Density Layout Constants */
   --sidebar-width: 240px;
   --sidebar-collapsed-width: 70px;
-  --header-height: 40px;
-  --capture-height: 40px;
-  --card-height: 34px;
+  --header-height: 48px;
+  --capture-height: 44px;
+  --card-height: 38px;
 }
 
 .dark {
-  /* System Colors - Dark Mode */
-  --bg-app: #121419;
-  --bg-sidebar: #1F2937;
-  --bg-surface: rgba(255, 255, 255, 0.05);
-  --text-primary: #FFFFFF;
-  --text-secondary: #A8A8B5;
-  --text-muted: #94A3B8;
-  --border-color: #374151;
-  --outline-color: #2E3039;
+  /* System Colors - Dark Mode (Industrial Slate) */
+  --bg-app: #0f1218;
+  --bg-sidebar: #161a23;
+  --bg-surface: #1c222d;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border-color: #2d3748;
+  --outline-color: #1a202c;
 
-  --color-q1-soft: rgba(255, 95, 95, 0.08);
-  --color-q2-soft: rgba(95, 159, 255, 0.08);
-  --color-q3-soft: rgba(255, 179, 95, 0.08);
-  --color-q4-soft: rgba(255, 255, 255, 0.03);
+  /* Dark mode quadrant visibility adjustments */
+  --color-q1-soft: rgba(255, 82, 82, 0.06);
+  --color-q2-soft: rgba(68, 138, 255, 0.06);
+  --color-q3-soft: rgba(255, 167, 38, 0.06);
+  --color-q4-soft: rgba(144, 164, 174, 0.06);
 }
 
 /* Base resets */
@@ -65,10 +69,11 @@
 body, html {
   height: 100%;
   overflow: hidden;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background-color: var(--bg-app);
   color: var(--text-primary);
   user-select: none;
+  -webkit-font-smoothing: antialiased;
 }
 
 button {
@@ -77,19 +82,25 @@ button {
   cursor: pointer;
   font-family: inherit;
   color: inherit;
+  outline: none;
 }
 
 input {
   font-family: inherit;
   user-select: text;
+  outline: none;
 }
 
-/* Sidebar Specific */
+/* Global Class State Overrides */
 .sidebar-collapsed {
   --sidebar-width: var(--sidebar-collapsed-width);
 }
 
-/* Layout Utilities */
+:global(.sidebar-collapsed) aside {
+  width: var(--sidebar-collapsed-width) !important;
+}
+
+/* High-Speed Layout Helpers */
 .flex { display: flex; }
 .flex-col { flex-direction: column; }
 .items-center { align-items: center; }
