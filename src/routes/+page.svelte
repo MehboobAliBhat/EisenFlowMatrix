@@ -22,18 +22,18 @@
   interface Task {
     id: string;
     text: string;
-    quadrant: number; // 1: Do, 2: Plan, 3: Handoff, 4: Void
+    quadrant: number;
     completed: boolean;
     timestamp: number;
   }
 
-  // State using Svelte 5 Runes
+  // State
   let tasks = $state<Task[]>([]);
   let newTaskText = $state('');
   let darkMode = $state(false);
   let searchQuery = $state('');
-  let activeFilter = $state('all'); // 'all', '1', '2', '3', '4'
-  let selectedQuadrant = $state(1); // For the Input Bar focus/target logic
+  let activeFilter = $state('all');
+  let selectedQuadrant = $state(1);
   let isSidebarCollapsed = $state(false);
   
   let inputElement: HTMLInputElement;
@@ -42,11 +42,7 @@
   onMount(() => {
     const savedTasks = localStorage.getItem('eisen-tasks');
     if (savedTasks) {
-      try {
-        tasks = JSON.parse(savedTasks);
-      } catch (e) {
-        console.error('Failed to parse tasks', e);
-      }
+      try { tasks = JSON.parse(savedTasks); } catch (e) {}
     }
     
     const savedTheme = localStorage.getItem('eisen-theme');
@@ -64,96 +60,61 @@
 
   $effect(() => {
     localStorage.setItem('eisen-sidebar-collapsed', isSidebarCollapsed.toString());
-    if (isSidebarCollapsed) {
-      document.documentElement.classList.add('sidebar-collapsed');
-    } else {
-      document.documentElement.classList.remove('sidebar-collapsed');
-    }
+    if (isSidebarCollapsed) document.documentElement.classList.add('sidebar-collapsed');
+    else document.documentElement.classList.remove('sidebar-collapsed');
   });
 
   $effect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('eisen-theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('eisen-theme', 'light');
-    }
+    if (darkMode) document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
+    localStorage.setItem('eisen-theme', darkMode ? 'dark' : 'light');
   });
 
   // Actions
   async function addTask(explicitQuadrant?: number) {
     if (!newTaskText.trim()) return;
-    
-    const targetQuadrant = explicitQuadrant ?? selectedQuadrant;
-
     const newTask: Task = {
       id: crypto.randomUUID(),
       text: newTaskText.trim(),
-      quadrant: targetQuadrant,
+      quadrant: explicitQuadrant ?? selectedQuadrant,
       completed: false,
       timestamp: Date.now()
     };
-    tasks = [newTask, ...tasks]; // Newest first
+    tasks = [newTask, ...tasks];
     newTaskText = '';
-    
-    // Auto-reset focus to input box
     await tick();
     inputElement?.focus();
   }
 
-  function deleteTask(id: string) {
-    tasks = tasks.filter(t => t.id !== id);
-  }
-
-  function toggleTask(id: string) {
-    tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
-  }
-
-  function moveTask(id: string, newQuadrant: number) {
-    tasks = tasks.map(t => t.id === id ? { ...t, quadrant: newQuadrant } : t);
-  }
-
-  function clearCompleted() {
-    tasks = tasks.filter(t => !t.completed);
-  }
-
-  function purgeVoid() {
-    tasks = tasks.filter(t => t.quadrant !== 4);
-  }
+  function deleteTask(id: string) { tasks = tasks.filter(t => t.id !== id); }
+  function toggleTask(id: string) { tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t); }
+  function moveTask(id: string, q: number) { tasks = tasks.map(t => t.id === id ? { ...t, quadrant: q } : t); }
+  function clearCompleted() { tasks = tasks.filter(t => !t.completed); }
+  function purgeVoid() { tasks = tasks.filter(t => t.quadrant !== 4); }
 
   function downloadData() {
-    const dataStr = JSON.stringify(tasks, null, 2);
-    const blob = new Blob([dataStr], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(tasks, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'eisenhower-tasks.json';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'eisenhower-tasks.json';
+    a.click();
   }
 
   function handleImport(e: Event) {
     const target = e.target as HTMLInputElement;
     if (!target.files?.length) return;
-    
-    const file = target.files[0];
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = (ev) => {
       try {
-        const importedTasks = JSON.parse(event.target?.result as string);
-        if (Array.isArray(importedTasks)) {
-          const existingIds = new Set(tasks.map(t => t.id));
-          const uniqueNewTasks = importedTasks.filter(t => !existingIds.has(t.id));
-          tasks = [...uniqueNewTasks, ...tasks];
+        const imported = JSON.parse(ev.target?.result as string);
+        if (Array.isArray(imported)) {
+          const ids = new Set(tasks.map(t => t.id));
+          tasks = [...imported.filter(t => !ids.has(t.id)), ...tasks];
         }
-      } catch (err) {
-        console.error('Failed to import', err);
-      }
+      } catch (err) {}
     };
-    reader.readAsText(file);
+    reader.readAsText(target.files[0]);
     target.value = '';
   }
 
@@ -162,443 +123,201 @@
   let dragOverQuadrantId = $state<number | null>(null);
   let dragOverTrash = $state(false);
 
-  function handleDragStart(e: DragEvent, id: string) {
-    draggedTaskId = id;
-    if (e.dataTransfer) {
-      e.dataTransfer.effectAllowed = 'move';
-    }
-  }
+  function handleDragStart(id: string) { draggedTaskId = id; }
+  function handleDragOver(qId: number) { dragOverQuadrantId = qId; dragOverTrash = false; }
+  function handleDragOverTrash() { dragOverTrash = true; dragOverQuadrantId = null; }
+  function handleDragLeave() { dragOverQuadrantId = null; dragOverTrash = false; }
+  function handleDrop(q: number) { if (draggedTaskId) { moveTask(draggedTaskId, q); draggedTaskId = null; dragOverQuadrantId = null; } }
+  function handleTrashDrop() { if (draggedTaskId) { deleteTask(draggedTaskId); draggedTaskId = null; dragOverTrash = false; } }
 
-  function handleDragOver(e: DragEvent, quadrantId: number) {
-    e.preventDefault();
-    dragOverQuadrantId = quadrantId;
-    dragOverTrash = false;
-    if (e.dataTransfer) {
-      e.dataTransfer.dropEffect = 'move';
-    }
-  }
-
-  function handleDragOverTrash(e: DragEvent) {
-    e.preventDefault();
-    dragOverTrash = true;
-    dragOverQuadrantId = null;
-  }
-
-  function handleDragLeave() {
-    dragOverQuadrantId = null;
-    dragOverTrash = false;
-  }
-
-  function handleDrop(targetQuadrant: number) {
-    if (draggedTaskId) {
-      moveTask(draggedTaskId, targetQuadrant);
-      draggedTaskId = null;
-      dragOverQuadrantId = null;
-    }
-  }
-
-  function handleTrashDrop() {
-    if (draggedTaskId) {
-      deleteTask(draggedTaskId);
-      draggedTaskId = null;
-      dragOverTrash = false;
-    }
-  }
-
-  // Derived filtered tasks
   const filteredTasks = $derived(() => {
-    let result = tasks;
+    let res = tasks;
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(t => t.text.toLowerCase().includes(query));
+      const q = searchQuery.toLowerCase();
+      res = res.filter(t => t.text.toLowerCase().includes(q));
     }
-    return result;
+    return res;
   });
 
   const quadrants = [
-    { 
-      id: 1, 
-      label: 'DO',
-      title: 'DO', 
-      subtitle: 'URGENT & IMPORTANT', 
-      icon: Zap, 
-      bg: 'bg-[#FFF1F1] dark:bg-red-950/20',
-      headerBg: 'bg-[#FFD6D6] dark:bg-red-900/40', 
-      accent: 'text-[#FF5F5F] dark:text-red-400',
-      border: 'border-[#FF5F5F]',
-      checkbox: 'checked:bg-[#FF5F5F] checked:border-[#FF5F5F]',
-      activeIndicator: 'bg-[#FF5F5F]'
-    },
-    { 
-      id: 2, 
-      label: 'PLAN',
-      title: 'PLAN', 
-      subtitle: 'IMPORTANT & NOT URGENT', 
-      icon: Calendar, 
-      bg: 'bg-[#F1F7FF] dark:bg-blue-950/20',
-      headerBg: 'bg-[#D6E8FF] dark:bg-blue-900/40', 
-      accent: 'text-[#5F9FFF] dark:text-blue-400',
-      border: 'border-[#5F9FFF]',
-      checkbox: 'checked:bg-[#5F9FFF] checked:border-[#5F9FFF]',
-      activeIndicator: 'bg-[#5F9FFF]'
-    },
-    { 
-      id: 3, 
-      label: 'HANDOFF',
-      title: 'HANDOFF', 
-      subtitle: 'URGENT & NOT IMPORTANT', 
-      icon: Repeat, 
-      bg: 'bg-[#FFF9F1] dark:bg-orange-950/20',
-      headerBg: 'bg-[#FFEDD6] dark:bg-orange-900/40', 
-      accent: 'text-[#FFB35F] dark:text-orange-400',
-      border: 'border-[#FFB35F]',
-      checkbox: 'checked:bg-[#FFB35F] checked:border-[#FFB35F]',
-      activeIndicator: 'bg-[#FFB35F]'
-    },
-    { 
-      id: 4, 
-      label: 'VOID',
-      title: 'VOID', 
-      subtitle: 'NEITHER URGENT NOR IMPORTANT', 
-      icon: Archive, 
-      bg: 'bg-[#F8F8F8] dark:bg-slate-900/40',
-      headerBg: 'bg-[#E5E5E5] dark:bg-slate-800/80', 
-      accent: 'text-[#A0A0A0] dark:text-slate-400',
-      border: 'border-[#D7D7D7]',
-      checkbox: 'checked:bg-[#A0A0A0] checked:border-[#A0A0A0]',
-      activeIndicator: 'bg-[#A0A0A0]'
-    }
+    { id: 1, label: 'DO', title: 'DO', sub: 'URGENT & IMPORTANT', icon: Zap, var: '--color-q1' },
+    { id: 2, label: 'PLAN', title: 'PLAN', sub: 'IMPORTANT & NOT URGENT', icon: Calendar, var: '--color-q2' },
+    { id: 3, label: 'HANDOFF', title: 'HANDOFF', sub: 'URGENT & NOT IMPORTANT', icon: Repeat, var: '--color-q3' },
+    { id: 4, label: 'VOID', title: 'VOID', sub: 'NEITHER URGENT NOR IMPORTANT', icon: Archive, var: '--color-q4' }
   ];
-
-  function getTasksByQuadrant(id: number) {
-    return filteredTasks().filter(t => t.quadrant === id).sort((a, b) => b.timestamp - a.timestamp);
-  }
 
   const sidebarLinks = [
-    { id: 'all', label: 'All Tasks', icon: ClipboardList, accent: 'text-[#FF5F5F]', activeBg: 'bg-[#FF5F5F]/10 dark:bg-red-900/20', hoverText: 'hover:text-[#FF5F5F]' },
-    { id: '1', label: 'Do', icon: Zap, accent: 'text-[#FF5F5F]', activeBg: 'bg-[#FF5F5F]/10 dark:bg-red-900/20', hoverText: 'hover:text-[#FF5F5F]' },
-    { id: '2', label: 'Plan', icon: Calendar, accent: 'text-[#5F9FFF]', activeBg: 'bg-[#5F9FFF]/10 dark:bg-blue-900/20', hoverText: 'hover:text-[#5F9FFF]' },
-    { id: '3', label: 'Handoff', icon: Repeat, accent: 'text-[#FFB35F]', activeBg: 'bg-[#FFB35F]/10 dark:bg-orange-900/20', hoverText: 'hover:text-[#FFB35F]' },
-    { id: '4', label: 'Void', icon: Archive, accent: 'text-[#A0A0A0]', activeBg: 'bg-[#A0A0A0]/10 dark:bg-slate-700/30', hoverText: 'hover:text-black dark:hover:text-white' }
+    { id: 'all', label: 'All Tasks', icon: ClipboardList, var: '--color-q1' },
+    { id: '1', label: 'Do', icon: Zap, var: '--color-q1' },
+    { id: '2', label: 'Plan', icon: Calendar, var: '--color-q2' },
+    { id: '3', label: 'Handoff', icon: Repeat, var: '--color-q3' },
+    { id: '4', label: 'Void', icon: Archive, var: '--color-q4' }
   ];
 
-  const getActiveAccent = () => {
-    const q = quadrants.find(q => q.id === selectedQuadrant);
-    return q ? q.accent : 'text-gray-400';
-  };
-
-  const getActiveIndicatorColor = () => {
-    const q = quadrants.find(q => q.id === Number(activeFilter));
-    if (activeFilter === 'all') return 'bg-[#FF5F5F]';
-    return q ? q.activeIndicator : 'bg-gray-400';
-  };
+  function getTasks(id: number) { return filteredTasks().filter(t => t.quadrant === id).sort((a,b) => b.timestamp - a.timestamp); }
 </script>
 
-<div class="h-screen bg-[#FAFAFA] dark:bg-inverse-surface flex overflow-hidden text-[#1F2937] dark:text-inverse-on-surface transition-colors duration-200 font-sans">
-  
-  <aside 
-    class={`bg-[#FCFCFC] dark:bg-inverse-surface border-r border-[#ECECEC] dark:border-outline flex flex-col justify-between relative shrink-0 transition-all duration-300 group/sidebar z-30 ${
-      isSidebarCollapsed ? 'w-[70px]' : 'w-[240px]'
-    }`}
-  >
-    <!-- Dynamic color indicator -->
-    <div
-      class={`absolute left-0 w-[4px] h-10 transition-all duration-300 ${getActiveIndicatorColor()}`}
-      style="top: {activeFilter === 'all' ? '128px' : (128 + (sidebarLinks.findIndex(l => l.id === activeFilter) * 52) + 'px')};"
-    ></div>
-
-    <!-- Collapse Toggle Button (Restored Auto-hide) -->
-    <button
-      onclick={() => isSidebarCollapsed = !isSidebarCollapsed}
-      class={`absolute -right-3 top-10 w-6 h-6 bg-white dark:bg-inverse-surface border border-[#ECECEC] dark:border-outline rounded-full flex items-center justify-center text-gray-400 hover:text-[#FF5F5F] transition-all z-40 shadow-md toggle-btn ${
-        isSidebarCollapsed ? 'opacity-100' : 'opacity-0'
-      }`}
-      aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-    >
-      <div class={`transition-transform duration-300 ${isSidebarCollapsed ? 'rotate-180' : ''}`}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-      </div>
+<div class="app-container">
+  <aside class="sidebar" class:collapsed={isSidebarCollapsed}>
+    <button class="toggle-btn" onclick={() => isSidebarCollapsed = !isSidebarCollapsed}>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d={isSidebarCollapsed ? "m9 18 6-6-6-6" : "m15 18-6-6 6-6"}/>
+      </svg>
     </button>
 
-    <div class="overflow-hidden">
-      <div class={`px-6 pt-8 pb-10 transition-all duration-300 ${isSidebarCollapsed ? 'opacity-0 scale-90 h-0 overflow-hidden' : 'opacity-100'}`}>
-        <h1 class="text-[16px] font-bold tracking-tight dark:text-white whitespace-nowrap">
-          MatrixFlow Elite
-        </h1>
-        <p class="mt-1 text-[9px] tracking-[0.24em] font-semibold text-[#A8A8B5] uppercase whitespace-nowrap">
-          PRECISION FOCUS
-        </p>
+    <div class="sidebar-header">
+      <div class="brand">
+        <h2>MatrixFlow Elite</h2>
+        <p>PRECISION FOCUS</p>
       </div>
-
-      <nav class={`space-y-1 px-2 transition-all duration-300 ${isSidebarCollapsed ? 'mt-20' : ''}`}>
-        {#each sidebarLinks as link}
-          <button
-            onclick={() => activeFilter = link.id}
-            class={`w-full flex items-center gap-4 px-4 py-3 text-left group transition-colors duration-200 sidebar-btn ${
-              activeFilter === link.id
-                ? `${link.activeBg} text-[#1F2937] dark:text-white font-bold`
-                : `text-[#A8A8B5] dark:text-surface-variant`
-            }`}
-            title={isSidebarCollapsed ? link.label : ''}
-          >
-            <link.icon 
-              size={18} 
-              class={`shrink-0 transition-colors duration-200 ${link.accent} ${
-                activeFilter === link.id ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'
-              }`} 
-            />
-            <span class={`text-[14px] font-medium transition-all duration-300 whitespace-nowrap ${
-              isSidebarCollapsed ? 'opacity-0 w-0' : `opacity-100 ${link.hoverText.replace('hover:', 'group-hover:')}`
-            }`}>
-              {link.label}
-            </span>
-          </button>
-        {/each}
-      </nav>
     </div>
 
-    <div class="p-3 overflow-hidden">
-      <div class="border-t border-[#ECECEC] dark:border-outline pt-3 flex flex-col gap-2">
-        <div 
-          role="region"
-          aria-label="Trash area"
-          ondragover={handleDragOverTrash}
-          ondragleave={handleDragLeave}
-          ondrop={handleTrashDrop}
-          class={`w-full flex flex-col items-center justify-center gap-2 transition-all border-2 border-dashed 
-            ${isSidebarCollapsed ? 'px-2 py-4' : 'px-4 py-6'}
-            ${
-            dragOverTrash 
-              ? 'bg-error/10 text-error border-error scale-[1.02]' 
-              : 'text-[#8B95A7] dark:text-surface-variant border-[#ECECEC] dark:border-outline/30 hover:border-error/50 hover:bg-white dark:hover:bg-white/5'
-          }`}
+    <nav class="sidebar-nav">
+      {#each sidebarLinks as link}
+        <button 
+          class="nav-item" 
+          class:active={activeFilter === link.id}
+          onclick={() => activeFilter = link.id}
+          style="--item-color: var({link.var})"
         >
-          {#if dragOverTrash}
-            <Trash2 size={isSidebarCollapsed ? 18 : 22} class="text-error" />
-          {:else}
-            <Trash size={isSidebarCollapsed ? 18 : 22} />
-          {/if}
-          <span class={`text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 ${isSidebarCollapsed ? 'opacity-0 h-0' : 'opacity-100'}`}>
-            Trash
-          </span>
-        </div>
+          <link.icon size={18} class="nav-icon" />
+          <span class="nav-label">{link.label}</span>
+        </button>
+      {/each}
+    </nav>
 
-        <div class="mt-2 pt-3 border-t border-[#ECECEC] dark:border-outline flex flex-col gap-0.5">
-          <button
-            onclick={clearCompleted}
-            class="w-full flex items-center gap-4 px-4 py-2.5 hover:bg-white dark:hover:bg-white/5 transition-colors duration-200 text-[#8B95A7] dark:text-surface-variant hover:text-error dark:hover:text-red-400 sidebar-btn"
-            title={isSidebarCollapsed ? 'Clear Done' : ''}
-          >
-            <Eraser size={16} class="shrink-0" />
-            <span class={`text-[13px] font-medium transition-all duration-300 whitespace-nowrap ${isSidebarCollapsed ? 'opacity-0 w-0' : 'opacity-100'}`}>
-              Clear Done
-            </span>
-          </button>
+    <div class="sidebar-footer">
+      <div 
+        class="trash-zone" 
+        class:drag-over={dragOverTrash}
+        ondragover={(e) => { e.preventDefault(); handleDragOverTrash(); }}
+        ondragleave={handleDragLeave}
+        ondrop={handleTrashDrop}
+      >
+        <Trash2 size={dragOverTrash ? 22 : 18} />
+        <span class="trash-label">Trash</span>
+      </div>
 
-          <button 
-            class="w-full flex items-center gap-4 px-4 py-2.5 hover:bg-white dark:hover:bg-white/5 transition-colors duration-200 text-[#8B95A7] dark:text-surface-variant hover:text-[#5F9FFF] sidebar-btn"
-            title={isSidebarCollapsed ? 'Settings' : ''}
-          >
-            <Settings size={16} class="shrink-0" />
-            <span class={`text-[13px] font-medium transition-all duration-300 whitespace-nowrap ${isSidebarCollapsed ? 'opacity-0 w-0' : 'opacity-100'}`}>
-              Settings
-            </span>
-          </button>
-        </div>
+      <div class="footer-actions">
+        <button class="footer-btn" onclick={clearCompleted}>
+          <Eraser size={16} />
+          <span>Clear Done</span>
+        </button>
+        <button class="footer-btn">
+          <Settings size={16} />
+          <span>Settings</span>
+        </button>
       </div>
     </div>
   </aside>
 
-  <!-- MAIN -->
-  <main class="flex-1 overflow-hidden flex flex-col">
-    <!-- TOPBAR -->
-    <header class="flex items-center justify-between px-6 py-3 shrink-0 z-20">
-      <div class="flex-1 flex items-center gap-4">
-        {#if isSidebarCollapsed}
-          <h1 class="text-sm font-bold dark:text-white">MatrixFlow</h1>
-        {/if}
+  <main class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        {#if isSidebarCollapsed}<span class="compact-brand">MatrixFlow</span>{/if}
       </div>
-
-      <div class="flex items-center gap-3">
-        <div class="bg-white dark:bg-white/5 px-4 h-9 flex items-center gap-3 shadow-sm border border-[#EEEEEE] dark:border-outline transition-all focus-within:ring-1 ring-primary/20">
-          <Search size={14} class="text-[#A0A0A0]" />
-          <input
-            bind:value={searchQuery}
-            class="bg-transparent outline-none border-none focus:ring-0 text-xs w-48 placeholder:text-[#B8B8C3] dark:text-white"
-            placeholder="Quick find tasks..."
-          />
+      <div class="topbar-right">
+        <div class="search-box">
+          <Search size={12} />
+          <input bind:value={searchQuery} placeholder="Search tasks..." />
         </div>
-
-        <button
-          onclick={() => darkMode = !darkMode}
-          class="w-9 h-9 bg-white dark:bg-white/5 shadow-sm border border-[#EEEEEE] dark:border-outline flex items-center justify-center text-[#5F6FFF] transition-all"
-        >
-          {#if darkMode}
-            <Sun size={15} />
-          {:else}
-            <Moon size={15} />
-          {/if}
+        <button class="icon-btn" onclick={() => darkMode = !darkMode}>
+          {#if darkMode}<Sun size={14}/>{:else}<Moon size={14}/>{/if}
         </button>
-
-        <div class="flex items-center bg-white dark:bg-white/5 shadow-sm border border-[#EEEEEE] dark:border-outline">
-          <label class="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-[#5F9FFF] cursor-pointer transition-all border-r border-[#EEEEEE] dark:border-outline" title="Import JSON">
-            <input type="file" accept=".json" class="hidden" onchange={handleImport} />
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <div class="data-actions">
+          <label class="icon-btn" title="Import">
+            <input type="file" accept=".json" onchange={handleImport} hidden />
+            <Download size={14} style="transform: rotate(180deg)" />
           </label>
-          <button
-            onclick={downloadData}
-            class="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-[#5F9FFF] transition-all"
-            title="Export JSON"
-          >
-            <Download size={15} />
+          <button class="icon-btn" onclick={downloadData} title="Export">
+            <Download size={14} />
           </button>
         </div>
       </div>
     </header>
 
-    <!-- CONTENT -->
-    <div class="px-6 pb-6 flex-1 flex flex-col gap-4 overflow-hidden">
-      <!-- CAPTURE BAR -->
-      <div class="w-full shrink-0">
-        <div class="bg-white dark:bg-inverse-surface shadow-sm border border-[#F0F0F0] dark:border-outline overflow-hidden transition-all">
-          <div class="flex items-center h-12 px-4">
-            <div class="mr-3">
-              <Zap size={16} class={getActiveAccent()} />
-            </div>
-
-            <input
-              bind:this={inputElement}
-              bind:value={newTaskText}
-              onkeydown={(e) => e.key === "Enter" && addTask()}
-              onfocus={() => { if (activeFilter !== 'all') selectedQuadrant = parseInt(activeFilter); }}
-              placeholder="Capture a new task..."
-              class="flex-1 h-full outline-none text-[15px] font-medium bg-transparent border-none focus:ring-0 dark:text-white placeholder:text-gray-300"
-            />
-
-            <div class="flex h-full items-center gap-1">
-              {#each quadrants.slice(0, 3) as q}
-                <button
-                  onfocus={() => selectedQuadrant = q.id}
-                  onclick={() => addTask(q.id)}
-                  class={`h-8 px-4 border text-[10px] font-bold tracking-wide transition-all uppercase
-                    ${selectedQuadrant === q.id 
-                      ? `${q.accent} ${q.bg} border-transparent ring-1 ring-black/5` 
-                      : 'text-gray-400 border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10 bg-transparent'}`}
-                >
-                  {q.label}
-                </button>
-              {/each}
-            </div>
+    <div class="content-area">
+      <div class="capture-bar">
+        <div class="capture-inner">
+          <Zap size={14} style="color: var(--color-q{selectedQuadrant})" />
+          <input 
+            bind:this={inputElement} 
+            bind:value={newTaskText} 
+            placeholder="Quick capture..." 
+            onkeydown={e => e.key === 'Enter' && addTask()}
+          />
+          <div class="capture-targets">
+            {#each quadrants.slice(0,3) as q}
+              <button 
+                class="target-btn" 
+                class:active={selectedQuadrant === q.id}
+                onclick={() => selectedQuadrant = q.id}
+              >{q.label}</button>
+            {/each}
           </div>
-
-          <!-- COLOR BRIDGE -->
-          <div
-            class={`h-[2px] transition-all duration-300 ${
-              selectedQuadrant === 1 ? 'bg-[#FF5F5F]' :
-              selectedQuadrant === 2 ? 'bg-[#5F9FFF]' :
-              selectedQuadrant === 3 ? 'bg-[#FFB35F]' : 'bg-[#D8D8D8]'
-            }`}
-          ></div>
         </div>
+        <div class="capture-accent" style="background: var(--color-q{selectedQuadrant})"></div>
       </div>
 
-      <!-- QUADRANTS -->
-      <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 grid-rows-none lg:grid-rows-2 gap-4 min-h-0 overflow-hidden">
+      <div class="matrix-grid">
         {#each quadrants as q}
           {#if activeFilter === 'all' || activeFilter === q.id.toString()}
-            <section
-              aria-label={`${q.title} quadrant`}
-              ondragover={(e) => handleDragOver(e, q.id)}
+            <section 
+              class="quadrant" 
+              style="--q-color: var({q.var})"
+              class:dim={q.id === 4}
+              class:drag-over={dragOverQuadrantId === q.id}
+              ondragover={(e) => { e.preventDefault(); handleDragOver(q.id); }}
               ondragleave={handleDragLeave}
               ondrop={() => handleDrop(q.id)}
-              class={`${q.bg} p-4 flex flex-col min-h-0 transition-all duration-300 overflow-hidden 
-                ${q.id === 4 ? 'opacity-50 grayscale' : ''}
-                ${dragOverQuadrantId === q.id ? 'ring-4 ring-inset ring-black/5 z-20' : ''}`}
             >
-              <!-- HEADER -->
-              <div class="flex items-center justify-between mb-3 shrink-0">
-                <div class={`flex items-center gap-2 ${q.accent}`}>
-                  <q.icon size={18} stroke-width={3} />
-                  <h2 class="text-[16px] tracking-[0.1em] font-black">{q.title}</h2>
+              <header class="quadrant-header">
+                <div class="q-title">
+                  <q.icon size={16} stroke-width={3} />
+                  <h3>{q.title}</h3>
                 </div>
-                <div class="flex items-center gap-3">
-                  {#if q.id === 4 && getTasksByQuadrant(4).length > 0}
-                    <button 
-                      onclick={purgeVoid}
-                      class="px-2 py-0.5 bg-white/50 dark:bg-black/20 hover:bg-[#ba1a1a] hover:text-white text-[8px] font-bold transition-all uppercase tracking-widest active:scale-95"
-                    >
-                      Purge
-                    </button>
+                <div class="q-meta">
+                  {#if q.id === 4 && getTasks(4).length > 0}
+                    <button class="purge-btn" onclick={purgeVoid}>Purge</button>
                   {/if}
-                  <p class={`text-[8px] tracking-[0.2em] font-black opacity-30 ${q.accent}`}>{q.subtitle}</p>
+                  <span>{q.sub}</span>
                 </div>
-              </div>
+              </header>
 
-              <!-- TASKS -->
-              <div class="flex-1 space-y-1.5 overflow-y-auto custom-scrollbar pr-1">
-                {#each getTasksByQuadrant(q.id) as task (task.id)}
-                  <div
-                    draggable="true"
-                    role="listitem"
-                    ondragstart={(e) => handleDragStart(e, task.id)}
-                    class="bg-white dark:bg-white/5 h-11 px-3 flex items-center justify-between group transition-all duration-200 cursor-grab active:cursor-grabbing hover:bg-white/90 dark:hover:bg-white/10 shadow-sm"
+              <div class="task-list custom-scrollbar">
+                {#each getTasks(q.id) as task (task.id)}
+                  <div 
+                    class="task-card" 
+                    draggable="true" 
+                    ondragstart={() => handleDragStart(task.id)}
                   >
-                    <div class="flex items-center gap-3 flex-1">
-                      <label class="relative shrink-0 flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={task.completed}
-                          onchange={() => toggleTask(task.id)}
-                          class={`peer appearance-none w-4 h-4 border-2 bg-transparent transition-all duration-200 cursor-pointer
-                            ${q.border} ${q.checkbox}`}
-                        />
-                        <Check 
-                          size={10} 
-                          stroke-width={4} 
-                          class="absolute inset-0 m-auto text-white opacity-0 peer-checked:opacity-100 pointer-events-none" 
-                        />
+                    <div class="task-left">
+                      <label class="checkbox-container">
+                        <input type="checkbox" checked={task.completed} onchange={() => toggleTask(task.id)} />
+                        <div class="checkmark"><Check size={8} stroke-width={4} /></div>
                       </label>
-
-                      <span class={`text-[13px] font-semibold text-[#334155] dark:text-white/80 transition-all ${task.completed ? "line-through opacity-40" : ""}`}>
-                        {task.text}
-                      </span>
+                      <span class="task-text" class:completed={task.completed}>{task.text}</span>
                     </div>
-
-                    <div class="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                      {#each quadrants.slice(0, 3) as targetQ}
-                        {#if targetQ.id !== q.id}
-                          <button 
-                            onclick={() => moveTask(task.id, targetQ.id)}
-                            class={`${targetQ.accent} hover:bg-black/5 dark:hover:bg-white/5 p-1 transition-all active:scale-90`} 
-                            title={`Move to ${targetQ.label}`}
-                          >
-                            <targetQ.icon size={12} />
+                    <div class="task-actions">
+                      {#each quadrants.slice(0,3) as target}
+                        {#if target.id !== q.id}
+                          <button class="action-btn" onclick={() => moveTask(task.id, target.id)} title={target.label}>
+                            <target.icon size={11} />
                           </button>
                         {/if}
                       {/each}
-                      <button
-                        onclick={() => deleteTask(task.id)}
-                        class="text-red-400 hover:text-[#FF5F5F] p-1 transition-all active:scale-90"
-                      >
-                        <Trash2 size={14} stroke-width={2} />
-                      </button>
+                      <button class="action-btn delete" onclick={() => deleteTask(task.id)}><Trash2 size={12}/></button>
                     </div>
                   </div>
                 {/each}
-                
-                {#if getTasksByQuadrant(q.id).length === 0}
-                  <div class="h-12 flex flex-col items-center justify-center border border-dashed border-black/[0.05] dark:border-white/[0.05] opacity-40 transition-opacity">
-                    <span class="text-[8px] font-bold uppercase tracking-widest italic">No Items</span>
-                  </div>
+                {#if getTasks(q.id).length === 0}
+                  <div class="empty-state">NO ITEMS</div>
                 {/if}
               </div>
 
-              <button
-                onclick={() => { selectedQuadrant = q.id; inputElement?.focus(); }}
-                class={`mt-2 flex items-center gap-2 text-[11px] font-bold transition-all hover:translate-x-1 ${q.accent}`}
-              >
-                <Plus size={12} stroke-width={3} />
-                Add new task
+              <button class="add-task-btn" onclick={() => { selectedQuadrant = q.id; inputElement.focus(); }}>
+                <Plus size={11} stroke-width={3} />
+                <span>Add new task</span>
               </button>
             </section>
           {/if}
@@ -609,58 +328,279 @@
 </div>
 
 <style>
-  :global(body, html) {
-    margin: 0;
-    height: 100%;
+  .app-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: var(--sidebar-width);
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: width 0.3s ease;
+    z-index: 30;
+  }
+
+  .sidebar-header {
+    padding: 32px 24px 40px;
     overflow: hidden;
-    background-color: #FAFAFA;
-    user-select: none;
-    font-family: 'Inter', system-ui, sans-serif;
   }
 
-  /* Force hover visibility for testing */
-  .sidebar-btn:hover {
-    background-color: rgba(0, 0, 0, 0.05) !important;
-  }
-  .dark .sidebar-btn:hover {
-    background-color: rgba(255, 255, 255, 0.05) !important;
+  .brand h2 { font-size: 16px; font-weight: 800; white-space: nowrap; }
+  .brand p { font-size: 9px; letter-spacing: 0.24em; font-weight: 600; color: var(--text-secondary); margin-top: 4px; }
+
+  .sidebar-nav { flex: 1; padding: 0 8px; }
+  
+  .nav-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    margin-bottom: 4px;
+    transition: background 0.2s, color 0.2s;
+    color: var(--text-secondary);
+    text-align: left;
   }
 
-  /* Robust Sidebar Toggle Visibility */
-  .group\/sidebar:hover .toggle-btn {
-    opacity: 1 !important;
+  .nav-item.active {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font-weight: 700;
   }
 
-  /* Global Sidebar Hydration Overrides */
-  :global(.sidebar-collapsed) aside {
-    width: 70px !important;
+  .nav-item:hover {
+    background: rgba(0, 0, 0, 0.03);
+    color: var(--item-color);
   }
-  :global(.sidebar-collapsed) aside h1,
-  :global(.sidebar-collapsed) aside p,
-  :global(.sidebar-collapsed) aside span {
-    opacity: 0 !important;
-    width: 0 !important;
-    display: none !important;
-  }
-  :global(.sidebar-collapsed) .toggle-btn {
-    opacity: 1 !important;
+  .dark .nav-item:hover { background: rgba(255, 255, 255, 0.03); }
+
+  .nav-icon { color: var(--item-color); opacity: 0.7; }
+  .nav-item:hover .nav-icon, .nav-item.active .nav-icon { opacity: 1; }
+
+  .nav-label { font-size: 14px; font-medium: 500; transition: opacity 0.3s; }
+  .collapsed .nav-label, .collapsed .brand { opacity: 0; pointer-events: none; }
+
+  .sidebar-footer { padding: 12px; border-top: 1px solid var(--border-color); }
+  
+  .trash-zone {
+    border: 2px dashed var(--border-color);
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+    transition: all 0.2s;
+    margin-bottom: 12px;
   }
 
-  :global(input) {
-    user-select: text;
+  .trash-zone.drag-over {
+    background: var(--color-error-soft);
+    color: var(--color-error);
+    border-color: var(--color-error);
+    transform: scale(1.02);
   }
 
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 3px;
+  .trash-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; }
+  .collapsed .trash-label { display: none; }
+  .collapsed .trash-zone { padding: 16px 8px; }
+
+  .footer-actions { border-top: 1px solid var(--border-color); padding-top: 8px; }
+  .footer-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+    transition: color 0.2s, background 0.2s;
   }
-  .custom-scrollbar::-webkit-scrollbar-track {
+  .footer-btn:hover { color: var(--color-error); background: rgba(0,0,0,0.02); }
+  .collapsed .footer-btn span { display: none; }
+
+  .toggle-btn {
+    position: absolute;
+    right: -12px;
+    top: 40px;
+    width: 24px;
+    height: 24px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    z-index: 40;
+    opacity: 0;
+  }
+  .sidebar:hover .toggle-btn, .collapsed .toggle-btn { opacity: 1; }
+
+  /* Main Content */
+  .main-content { flex: 1; display: flex; flex-direction: column; }
+  
+  .topbar {
+    height: var(--header-height);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .search-box {
+    background: var(--bg-surface);
+    border: 1px solid var(--outline-color);
+    padding: 0 12px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .search-box input {
     background: transparent;
+    border: none;
+    outline: none;
+    font-size: 11px;
+    width: 160px;
+    color: var(--text-primary);
   }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(0,0,0,0.06);
-    border-radius: 0px;
+
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-surface);
+    border: 1px solid var(--outline-color);
+    color: var(--text-secondary);
   }
-  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.06);
+  .icon-btn:hover { color: var(--color-primary); border-color: var(--color-primary); }
+
+  .data-actions { display: flex; border-left: 1px solid var(--outline-color); margin-left: 8px; }
+
+  /* Content */
+  .content-area { padding: 24px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+
+  .capture-bar { background: var(--bg-surface); border: 1px solid var(--outline-color); position: relative; }
+  .capture-inner { height: var(--capture-height); display: flex; align-items: center; padding: 0 16px; gap: 12px; }
+  .capture-inner input { flex: 1; background: transparent; border: none; outline: none; font-size: 14px; font-weight: 500; color: var(--text-primary); }
+  .capture-accent { height: 2px; transition: background 0.3s; }
+
+  .capture-targets { display: flex; gap: 4px; }
+  .target-btn {
+    padding: 0 12px;
+    height: 28px;
+    border: 1px solid var(--outline-color);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
   }
+  .target-btn.active { background: var(--bg-app); border-color: transparent; font-weight: 800; }
+
+  /* Matrix */
+  .matrix-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; min-height: 0; }
+  
+  .quadrant {
+    background: var(--q-color-soft, rgba(0,0,0,0.02));
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    transition: all 0.3s;
+    border: 1px solid transparent;
+  }
+  .quadrant.dim { opacity: 0.5; filter: grayscale(1); }
+  .quadrant.drag-over { border: 2px solid var(--q-color); }
+
+  .quadrant-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .q-title { display: flex; align-items: center; gap: 8px; color: var(--q-color); }
+  .q-title h3 { font-size: 14px; font-weight: 900; letter-spacing: 0.1em; }
+  .q-meta { display: flex; align-items: center; gap: 8px; color: var(--q-color); opacity: 0.4; }
+  .q-meta span { font-size: 7px; font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase; }
+
+  .purge-btn { font-size: 7px; font-weight: 900; background: var(--color-error); color: white; padding: 2px 6px; }
+
+  /* Tasks */
+  .task-list { flex: 1; overflow-y: auto; padding-right: 4px; }
+  .task-card {
+    height: var(--card-height);
+    background: var(--bg-surface);
+    border: 1px solid var(--outline-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    margin-bottom: 4px;
+    cursor: grab;
+    transition: transform 0.1s;
+  }
+  .task-card:hover { transform: translateY(-1px); border-color: var(--text-secondary); }
+  .task-left { display: flex; align-items: center; gap: 10px; }
+  .task-text { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+  .task-text.completed { text-decoration: line-through; opacity: 0.4; }
+
+  .task-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.2s; }
+  .task-card:hover .task-actions { opacity: 1; }
+  
+  .action-btn { padding: 4px; color: var(--text-muted); }
+  .action-btn:hover { color: var(--color-primary); }
+  .action-btn.delete:hover { color: var(--color-error); }
+
+  .checkbox-container { position: relative; width: 14px; height: 14px; cursor: pointer; }
+  .checkbox-container input { display: none; }
+  .checkmark {
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--q-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+  }
+  .checkbox-container input:checked + .checkmark { background: var(--q-color); }
+
+  .add-task-btn {
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--q-color);
+    opacity: 0.8;
+  }
+  .add-task-btn:hover { transform: translateX(2px); opacity: 1; }
+
+  .empty-state {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed var(--outline-color);
+    font-size: 7px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    opacity: 0.3;
+  }
+
+  /* Custom Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar { width: 3px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.06); }
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); }
+
+  /* Utilities */
+  .compact-brand { font-size: 12px; font-weight: 800; color: var(--text-primary); }
 </style>
