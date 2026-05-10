@@ -266,23 +266,23 @@
           {#if activeFilter === 'all' || activeFilter === q.id.toString()}
             <section 
               class="quadrant" 
-              style="--q-color: var({q.var}); --q-soft: var({q.soft})"
+              style="--q-color: var({q.var}); --q-soft: var({q.soft}); --q-header: var({q.var}-header)"
               class:dim={q.id === 4}
               class:drag-over={dragOverQuadrantId === q.id}
               ondragover={(e) => { e.preventDefault(); handleDragOver(q.id); }}
               ondragleave={handleDragLeave}
               ondrop={() => handleDrop(q.id)}
             >
-              <header class="quadrant-header">
-                <div class="q-title">
+              <header class="quadrant-header" style="background: var(--q-header); margin: -12px -12px 12px; padding: 10px 12px;">
+                <div class="q-title" style="color: {q.id === 4 ? '#ffffff' : 'var(--q-color)'}">
                   <q.icon size={16} stroke-width={3} />
                   <h3>{q.title}</h3>
                 </div>
-                <div class="q-meta">
+                <div class="q-meta" style="color: {q.id === 4 ? '#ffffff' : 'var(--q-color)'}">
                   {#if q.id === 4 && getTasks(4).length > 0}
-                    <button class="purge-btn industrial-hover" onclick={purgeVoid}>Purge</button>
+                    <button class="purge-btn industrial-hover" onclick={purgeVoid} style="background: #ffffff; color: var(--color-q4)">Purge</button>
                   {/if}
-                  <span>{q.sub}</span>
+                  <span style="opacity: 0.8">{q.sub}</span>
                 </div>
               </header>
 

@@ -27,7 +27,7 @@
   /* Quadrant 4 (VOID) - Slate Spectrum */
   --color-q4: #64748b;
   --color-q4-soft: #f1f5f9;
-  --color-q4-header: #e2e8f0;
+  --color-q4-header: #64748b;
 
   --color-error: #ff5252;
   --color-error-soft: rgba(255, 82, 82, 0.1);
