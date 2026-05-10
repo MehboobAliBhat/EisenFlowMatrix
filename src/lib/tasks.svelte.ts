@@ -16,11 +16,27 @@ class TaskService {
   }
 
   private load() {
+    // 1. Load Tasks
     const savedTasks = localStorage.getItem('eisen-tasks');
     if (savedTasks) {
       try { this.tasks = JSON.parse(savedTasks); } catch (e) { console.error('Failed to parse tasks', e); }
     }
-    // Classes are already set by app.html script, but we ensure consistency
+
+    // 2. Load Theme State
+    const savedTheme = localStorage.getItem('eisen-theme');
+    if (savedTheme) {
+      this.darkMode = savedTheme === 'dark';
+    } else {
+      this.darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    // 3. Load Sidebar State
+    const savedSidebar = localStorage.getItem('eisen-sidebar-collapsed');
+    if (savedSidebar) {
+      this.isSidebarCollapsed = savedSidebar === 'true';
+    }
+
+    // 4. Sync Classes
     this.updateThemeClass();
     this.updateSidebarClass();
   }
@@ -63,7 +79,7 @@ class TaskService {
     this.save();
   }
 
-  purgeVoid() {
+  purgeArchive() {
     this.tasks = this.tasks.filter(t => t.quadrant !== 4);
     this.save();
   }

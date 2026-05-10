@@ -24,8 +24,8 @@ The application uses a semantic color system for Quadrants and system states.
 ### Quadrant Semantics
 - **Q1 (Do):** `#FF5F5F` (Red)
 - **Q2 (Plan):** `#5F9FFF` (Blue)
-- **Q3 (Handoff):** `#FFB35F` (Orange)
-- **Q4 (Void):** `#A0A0A0` (Gray)
+- **Q3 (Delegate):** `#FFB35F` (Orange)
+- **Q4 (Archive):** `#A0A0A0` (Gray)
 
 ## 4. Typography
 - **Primary Font:** 'Inter', sans-serif (Precision UI)

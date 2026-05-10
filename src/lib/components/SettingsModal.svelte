@@ -33,7 +33,8 @@
 
   function deleteTheme(id: string) {
     if (confirm('Delete this theme?')) {
-      const customOnes = themeService.themes.filter(t => t.id !== id && !t.id.includes('industrial-classic') && !t.id.includes('modern-soft'));
+      const defaultIds = ['industrial-classic', 'modern-soft', 'laws-of-ux', 'material-m3', 'nord-polar', 'github-primer'];
+      const customOnes = themeService.themes.filter(t => t.id !== id && !defaultIds.includes(t.id));
       localStorage.setItem('eisen-custom-themes', JSON.stringify(customOnes));
       themeService.activeThemeId = 'industrial-classic';
       themeService.themes = themeService.themes.filter(t => t.id !== id);
@@ -107,7 +108,7 @@
                 </button>
                 <div class="theme-actions">
                   <button onclick={() => themeService.exportTheme(theme)} title="Export"><Download size={12}/></button>
-                  {#if !['industrial-classic', 'modern-soft'].includes(theme.id)}
+                  {#if !['industrial-classic', 'modern-soft', 'laws-of-ux', 'material-m3', 'nord-polar', 'github-primer'].includes(theme.id)}
                     <button class="delete" onclick={() => deleteTheme(theme.id)}><Trash2 size={12}/></button>
                   {/if}
                 </div>
@@ -120,7 +121,7 @@
         <section class="settings-section editor">
           <div class="section-header">
             <h4>Edit Active: {themeService.activeTheme.name}</h4>
-            {#if ['industrial-classic', 'modern-soft'].includes(themeService.activeTheme.id)}
+            {#if ['industrial-classic', 'modern-soft', 'laws-of-ux', 'material-m3', 'nord-polar', 'github-primer'].includes(themeService.activeTheme.id)}
               <button 
                 class="reset-btn" 
                 onclick={() => themeService.resetToDefault(themeService.activeTheme.id)}
@@ -154,38 +155,58 @@
               <input type="color" bind:value={themeService.activeTheme.colors.q2} oninput={() => themeService.applyTheme()} />
             </div>
             <div class="color-field">
-              <label>Handoff (Q3)</label>
+              <label>Delegate (Q3)</label>
               <input type="color" bind:value={themeService.activeTheme.colors.q3} oninput={() => themeService.applyTheme()} />
             </div>
             <div class="color-field">
-              <label>Void (Q4)</label>
+              <label>Archive (Q4)</label>
               <input type="color" bind:value={themeService.activeTheme.colors.q4} oninput={() => themeService.applyTheme()} />
             </div>
           </div>
 
-          <div class="range-editor">
-            <div class="range-field">
-              <div class="range-label">
-                <label>Corner Radius</label>
-                <span>{themeService.activeTheme.layout.radius}px</span>
+          <div class="preset-selectors">
+            <!-- Roundness Control -->
+            <div class="preset-group">
+              <label>Roundness</label>
+              <div class="segmented-control">
+                {#each [
+                  { label: 'Sharp', val: 0 },
+                  { label: 'Slight', val: 4 },
+                  { label: 'Soft', val: 12 }
+                ] as opt}
+                  <button 
+                    class:active={themeService.activeTheme.layout.radius === opt.val}
+                    onclick={() => { themeService.activeTheme.layout.radius = opt.val; themeService.applyTheme(); }}
+                  >
+                    {opt.label}
+                  </button>
+                {/each}
               </div>
-              <input type="range" min="0" max="24" bind:value={themeService.activeTheme.layout.radius} oninput={() => themeService.applyTheme()} />
-            </div>
-            
-            <div class="range-field">
-              <div class="range-label">
-                <label>Grid Spacing</label>
-                <span>{themeService.activeTheme.layout.gap}px</span>
-              </div>
-              <input type="range" min="0" max="32" bind:value={themeService.activeTheme.layout.gap} oninput={() => themeService.applyTheme()} />
             </div>
 
-            <div class="range-field">
-              <div class="range-label">
-                <label>Card Padding</label>
-                <span>{themeService.activeTheme.layout.cardPadding}px</span>
+            <!-- Density Control -->
+            <div class="preset-group">
+              <label>Layout Density</label>
+              <div class="segmented-control">
+                {#each [
+                  { label: 'Compact', gap: 1, pad: 6, h: 32, fs: 11 },
+                  { label: 'Standard', gap: 1, pad: 14, h: 46, fs: 14 },
+                  { label: 'Spacious', gap: 1, pad: 24, h: 64, fs: 17 }
+                ] as opt}
+                  <button 
+                    class:active={themeService.activeTheme.layout.cardPadding === opt.pad}
+                    onclick={() => { 
+                      themeService.activeTheme.layout.gap = opt.gap; 
+                      themeService.activeTheme.layout.cardPadding = opt.pad; 
+                      themeService.activeTheme.layout.cardHeight = opt.h;
+                      themeService.activeTheme.layout.fontSize = opt.fs;
+                      themeService.applyTheme(); 
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                {/each}
               </div>
-              <input type="range" min="4" max="20" bind:value={themeService.activeTheme.layout.cardPadding} oninput={() => themeService.applyTheme()} />
             </div>
           </div>
         </section>
@@ -428,27 +449,55 @@
     cursor: pointer;
   }
 
-  .range-editor {
+  /* Preset Selectors */
+  .preset-selectors {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 24px;
   }
 
-  .range-field {
+  .preset-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
   }
 
-  .range-label {
-    display: flex;
-    justify-content: space-between;
+  .preset-group label {
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
   }
 
-  input[type="range"] {
-    accent-color: var(--color-primary);
+  .segmented-control {
+    display: flex;
+    background: var(--bg-sidebar);
+    border: 1px solid var(--border-color);
+    padding: 2px;
+    gap: 2px;
+  }
+
+  .segmented-control button {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+
+  .segmented-control button:hover:not(.active) {
+    color: var(--text-primary);
+    background: var(--bg-app);
+  }
+
+  .segmented-control button.active {
+    background: var(--color-primary);
+    color: white;
+    box-shadow: 0 2px 8px var(--color-primary-soft);
   }
 
   /* Toggles */

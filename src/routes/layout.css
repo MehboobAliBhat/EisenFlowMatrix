@@ -19,12 +19,12 @@
   --color-q2-soft: #f0f7ff;
   --color-q2-header: #e3f2fd;
   
-  /* Quadrant 3 (HANDOFF) - Orange Spectrum */
+  /* Quadrant 3 (DELEGATE) - Orange Spectrum */
   --color-q3: #ffa726;
   --color-q3-soft: #fffaf2;
   --color-q3-header: #fff3e0;
   
-  /* Quadrant 4 (VOID) - Slate Spectrum */
+  /* Quadrant 4 (ARCHIVE) - Slate Spectrum */
   --color-q4: #334155;
   --color-q4-soft: #f8f9fa;
   --color-q4-header: #eceff1;
@@ -40,6 +40,17 @@
   --header-height: 48px;
   --capture-height: 44px;
   --card-height: 38px;
+  --card-padding: 10px;
+  
+  /* Brand Glows */
+  --primary-glow: 0 0 20px var(--color-primary-soft);
+  --primary-border: 1px solid var(--color-primary);
+
+  /* Animation Constants */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.6, 1);
+  --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 /* Custom UI Modes */
@@ -88,6 +99,15 @@ body, html {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Base interactive transitions */
+button, a, input {
+  transition: all var(--transition-fast);
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
 /* Prevent transitions on load */
 .preload * {
   -webkit-transition: none !important;
@@ -110,6 +130,8 @@ input {
   font-family: inherit;
   user-select: text;
   outline: none;
+  /* Slightly more prominent theme-colored caret */
+  caret-color: var(--color-primary);
 }
 
 /* Global Class State Overrides */
@@ -131,19 +153,23 @@ input {
 
 /* Universal Industrial Hover Behavior */
 .industrial-hover {
-  transition: background-color 0.2s, outline-color 0.2s !important;
-  outline: 1px solid transparent;
-  outline-offset: -2px;
+  transition: all var(--transition-base) !important;
+  outline: none !important;
+  position: relative;
 }
 
 .industrial-hover:hover {
-  outline-color: currentColor !important;
-  background-color: var(--bg-surface) !important;
+  border-color: var(--color-primary) !important;
   z-index: 10;
+}
+
+.industrial-hover:active {
+  transform: scale(0.98);
 }
 
 .dark .industrial-hover:hover {
   background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: var(--color-primary) !important;
 }
 
 /* Scrollbar Style */

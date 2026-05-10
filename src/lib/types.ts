@@ -12,6 +12,8 @@ export interface ThemeDefinition {
     radius: number;
     gap: number;
     cardPadding: number;
+    cardHeight: number;
+    fontSize: number;
   };
 }
 

@@ -2,6 +2,8 @@
   import type { QuadrantConfig } from "$lib/types";
   import { taskService } from "$lib/tasks.svelte";
   import TaskCard from "./TaskCard.svelte";
+  import { flip } from "svelte/animate";
+  import { fade } from "svelte/transition";
 
   let { config }: { config: QuadrantConfig } = $props();
 
@@ -26,9 +28,9 @@
     }
   }
 
-  function purgeVoid() {
+  function purgeArchive() {
     if (config.id === 4) {
-      taskService.purgeVoid();
+      taskService.purgeArchive();
     }
   }
 </script>
@@ -49,7 +51,7 @@
     </div>
     <div class="q-meta">
       {#if config.id === 4 && tasks.length > 0}
-        <button class="purge-btn industrial-hover" onclick={purgeVoid}>Purge</button>
+        <button class="purge-btn industrial-hover" onclick={purgeArchive}>Purge</button>
       {/if}
       <span class="sub-label">{config.sub}</span>
     </div>
@@ -57,11 +59,13 @@
 
   <div class="task-list custom-scrollbar">
     {#each tasks as task (task.id)}
-      <TaskCard {task} />
+      <div animate:flip={{ duration: 300 }}>
+        <TaskCard {task} />
+      </div>
     {/each}
     
     {#if tasks.length === 0}
-      <div class="empty-state">
+      <div class="empty-state" in:fade={{ duration: 200 }}>
         <span class="empty-icon"><config.icon size={24} stroke-width={1} /></span>
         <span class="empty-text">NO ITEMS IN {config.label}</span>
       </div>
@@ -76,7 +80,7 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
-    transition: all 0.3s;
+    transition: all var(--transition-base);
     border: 1px solid var(--q-border);
     position: relative;
     border-radius: var(--radius);
@@ -116,6 +120,22 @@
     font-size: 14px;
     font-weight: 900;
     letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .q-count {
+    font-size: 11px;
+    opacity: 0.5;
+    transition: all 0.2s;
+  }
+
+  .q-count.overloaded {
+    color: var(--color-error);
+    opacity: 1;
+    font-weight: 900;
+    text-shadow: 0 0 8px var(--color-error-soft);
   }
 
   .q-meta {
@@ -150,6 +170,7 @@
     padding-right: 4px;
     display: flex;
     flex-direction: column;
+    gap: var(--grid-gap, 2px);
   }
 
   .empty-state {

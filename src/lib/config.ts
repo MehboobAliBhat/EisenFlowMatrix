@@ -28,8 +28,8 @@ export const QUADRANTS: QuadrantConfig[] = [
   },
   { 
     id: 3, 
-    label: 'HANDOFF', 
-    title: 'HANDOFF', 
+    label: 'DELEGATE', 
+    title: 'DELEGATE', 
     sub: 'URGENT & NOT IMPORTANT', 
     icon: Repeat, 
     var: '--color-q3', 
@@ -37,8 +37,8 @@ export const QUADRANTS: QuadrantConfig[] = [
   },
   { 
     id: 4, 
-    label: 'VOID', 
-    title: 'VOID', 
+    label: 'ARCHIVE', 
+    title: 'ARCHIVE', 
     sub: 'NEITHER URGENT NOR IMPORTANT', 
     icon: Archive, 
     var: '--color-q4', 
@@ -47,9 +47,9 @@ export const QUADRANTS: QuadrantConfig[] = [
 ];
 
 export const SIDEBAR_LINKS: SidebarLink[] = [
-  { id: 'all', label: 'All Tasks', icon: ClipboardList, var: '--color-primary', soft: '--color-primary-soft' },
+  { id: 'all', label: 'Dashboard', icon: ClipboardList, var: '--color-primary', soft: '--color-primary-soft' },
   { id: '1', label: 'Do', icon: Zap, var: '--color-q1', soft: '--color-q1-soft' },
   { id: '2', label: 'Plan', icon: Calendar, var: '--color-q2', soft: '--color-q2-soft' },
-  { id: '3', label: 'Handoff', icon: Repeat, var: '--color-q3', soft: '--color-q3-soft' },
-  { id: '4', label: 'Void', icon: Archive, var: '--color-q4', soft: '--color-q4-soft' }
+  { id: '3', label: 'Delegate', icon: Repeat, var: '--color-q3', soft: '--color-q3-soft' },
+  { id: '4', label: 'Archive', icon: Archive, var: '--color-q4', soft: '--color-q4-soft' }
 ];

@@ -51,6 +51,20 @@
     flex-direction: column;
     height: 100%;
     overflow: hidden;
+    position: relative;
+  }
+
+  .main-content::before {
+    content: '';
+    position: absolute;
+    top: -10%;
+    right: -10%;
+    width: 40%;
+    height: 40%;
+    background: radial-gradient(circle, var(--color-primary-soft) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
   }
 
   .content-area {
@@ -60,6 +74,8 @@
     flex-direction: column;
     gap: 12px;
     overflow: hidden;
+    position: relative;
+    z-index: 1;
   }
 
   @media (max-width: 768px) {

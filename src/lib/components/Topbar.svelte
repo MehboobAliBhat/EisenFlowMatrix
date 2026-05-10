@@ -16,14 +16,15 @@
 </script>
 
 <header class="topbar">
+  <div class="topbar-accent"></div>
   <div class="topbar-left">
     {#if taskService.isSidebarCollapsed}
       <span class="compact-brand">MatrixFlow</span>
     {/if}
   </div>
   <div class="topbar-right">
-    <div class="search-box industrial-hover">
-      <Search size={12} />
+    <div class="search-box">
+      <Search size={12} class="search-icon" />
       <input bind:value={taskService.searchQuery} placeholder="Quick find..." />
     </div>
     
@@ -34,7 +35,7 @@
     <div class="data-actions">
       <label class="icon-wrapper" title="Import Data">
         <input type="file" accept=".json" onchange={handleImport} hidden />
-        <div class="icon-btn-like industrial-hover">
+        <div class="icon-btn-like">
           <Download size={14} style="transform: rotate(180deg)" />
         </div>
       </label>
@@ -55,12 +56,24 @@
     border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
     background: var(--bg-sidebar);
+    position: relative;
+  }
+
+  .topbar-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--color-primary);
+    opacity: 0.8;
   }
 
   .compact-brand {
     font-size: 12px;
     font-weight: 800;
-    color: var(--text-primary);
+    color: var(--color-primary);
+    text-shadow: var(--primary-glow);
   }
 
   .search-box {
@@ -72,6 +85,21 @@
     align-items: center;
     gap: 8px;
     border-radius: var(--radius);
+    transition: all var(--transition-base);
+  }
+
+  .search-box:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary-soft);
+  }
+
+  .search-icon {
+    color: var(--text-muted);
+    transition: color var(--transition-fast);
+  }
+
+  .search-box:focus-within .search-icon {
+    color: var(--color-primary);
   }
 
   .search-box input {
@@ -117,5 +145,6 @@
   .icon-btn-like:hover {
     color: var(--color-primary);
     border-color: var(--color-primary);
+    background: var(--color-primary-soft);
   }
 </style>

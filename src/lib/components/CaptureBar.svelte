@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { Zap, Command, CornerDownLeft } from "lucide-svelte";
+  import { Zap, CornerDownLeft } from "lucide-svelte";
   import { QUADRANTS } from "$lib/config";
   import { taskService } from "$lib/tasks.svelte";
-  import { fade } from "svelte/transition";
   import { onMount } from 'svelte';
 
   let newTaskText = $state('');
@@ -10,7 +9,10 @@
   let inputElement: HTMLInputElement;
   let targetButtons = $state<HTMLButtonElement[]>([]);
   let isSuccessActive = $state(false);
+  let isFocused = $state(false);
 
+  const ActiveIcon = $derived(QUADRANTS.find(q => q.id === selectedQuadrant)?.icon || Zap);
+  
   onMount(() => {
     inputElement?.focus();
   });
@@ -26,9 +28,9 @@
       taskService.addTask(newTaskText, explicitQuadrant ?? selectedQuadrant);
       newTaskText = '';
       
-      // Success Pulse
+      // Brief static feedback
       isSuccessActive = true;
-      setTimeout(() => isSuccessActive = false, 300);
+      setTimeout(() => isSuccessActive = false, 200);
     }
     inputElement?.focus();
   }
@@ -37,12 +39,16 @@
     targetButtons[index] = node;
   }
 
+  function handleTargetClick(qId: number) {
+    selectedQuadrant = qId;
+    addTask();
+  }
+
   function handleKeyDown(e: KeyboardEvent) {
     if (e.key === 'Tab') {
       const activeIdx = QUADRANTS.findIndex(q => q.id === selectedQuadrant);
       
       if (e.shiftKey) {
-        // Shift + Tab
         if (document.activeElement === inputElement) {
           e.preventDefault();
           targetButtons[2]?.focus();
@@ -51,12 +57,8 @@
           inputElement?.focus();
         }
       } else {
-        // Tab
         if (document.activeElement === inputElement) {
           e.preventDefault();
-          // Move to the NEXT button relative to current active mode
-          // If Q1 is active, move to Q2. If Q2, move to Q3. If Q3, wrap to input (default tab) or Q1.
-          // The request: "if current mode is plan then tab moves to handoff"
           const nextBtnIdx = activeIdx < 2 ? activeIdx + 1 : 0;
           targetButtons[nextBtnIdx]?.focus();
         } else if (document.activeElement === targetButtons[2]) {
@@ -64,48 +66,53 @@
           inputElement?.focus();
         }
       }
-    } else if (e.key === 'Enter' && document.activeElement === inputElement) {
-      addTask();
+    } else if (e.key === 'Enter') {
+      if (document.activeElement === inputElement || targetButtons.includes(document.activeElement as HTMLButtonElement)) {
+        e.preventDefault();
+        addTask();
+      }
     }
   }
 </script>
 
 <div 
-  class="capture-console industrial-hover" 
-  class:success-pulse={isSuccessActive}
+  class="capture-console" 
+  class:is-focused={isFocused}
   style="--active-q-color: var(--color-q{selectedQuadrant}); --active-q-bg: var(--color-q{selectedQuadrant}-soft)"
 >
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div class="console-inner" onclick={() => inputElement?.focus()}>
-    <!-- Left Actions: Quick Toggle/Status -->
     <div class="console-left">
       <div class="status-indicator">
-        <Zap 
+        <ActiveIcon 
           size={16} 
-          class="charge-icon" 
-          style="--charge: {Math.min(newTaskText.length / 20, 1.5)}; color: var(--active-q-color)" 
+          class="charge-icon {isSuccessActive ? 'success-blink' : ''}" 
+          style="color: var(--active-q-color)" 
         />
       </div>
     </div>
 
-    <!-- Input Section: Less wide, focused -->
     <div class="input-section">
-      <input 
-        bind:this={inputElement} 
-        bind:value={newTaskText} 
-        placeholder={placeholders[selectedQuadrant as keyof typeof placeholders]} 
-        onkeydown={handleKeyDown}
-      />
-      {#if newTaskText}
-        <div class="kbd-hint" transition:fade={{duration: 100}}>
-          <span>ENTER</span>
-          <CornerDownLeft size={10} />
-        </div>
-      {/if}
+      <div class="input-relative">
+        <input 
+          bind:this={inputElement} 
+          bind:value={newTaskText} 
+          placeholder={placeholders[selectedQuadrant as keyof typeof placeholders]} 
+          onkeydown={handleKeyDown}
+          onfocus={() => isFocused = true}
+          onblur={() => isFocused = false}
+        />
+
+        {#if newTaskText}
+          <div class="kbd-hint dynamic-hint">
+            <span>ENTER</span>
+            <CornerDownLeft size={10} />
+          </div>
+        {/if}
+      </div>
     </div>
 
-    <!-- Right Actions: Quadrant Selection -->
     <div class="console-right" onclick={e => e.stopPropagation()}>
       <div class="capture-targets">
         {#each QUADRANTS.slice(0,3) as q, i}
@@ -133,15 +140,9 @@
     border: 2px solid var(--outline-color);
     position: relative;
     flex-shrink: 0;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: var(--radius);
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
-  }
-
-  .success-pulse {
-    border-color: var(--active-q-color) !important;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px var(--active-q-bg);
+    /* Ensure no transitions on the container itself to avoid flickering */
+    transition: border-color 0.1s linear;
   }
 
   .console-inner {
@@ -149,7 +150,6 @@
     display: flex;
     align-items: center;
     padding: 0 12px;
-    gap: 0;
   }
 
   .console-left {
@@ -159,23 +159,32 @@
     border-right: 1px solid var(--border-color);
   }
 
-  :global(.charge-icon) {
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    transform: scale(calc(1 + (var(--charge) * 0.2)));
-    filter: drop-shadow(0 0 4px var(--active-q-bg));
+  .charge-icon {
+    transition: opacity 0.1s linear;
+  }
+
+  .success-blink {
+    opacity: 0;
   }
 
   .input-section {
-    flex: 0 1 500px; /* Controlled width */
+    flex: 1;
     display: flex;
     align-items: center;
     padding: 0 16px;
-    gap: 12px;
     cursor: text;
+    position: relative;
+  }
+
+  .input-relative {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
   }
 
   .input-section input {
-    flex: 1;
+    width: 100%;
     background: transparent;
     border: none;
     outline: none;
@@ -183,7 +192,7 @@
     font-weight: 600;
     color: var(--text-primary);
     letter-spacing: -0.01em;
-    transition: font-size 0.2s cubic-bezier(0.4, 0, 0.2, 1), font-weight 0.2s;
+    caret-color: var(--active-q-color);
   }
 
   .input-section input:focus {
@@ -203,10 +212,17 @@
     font-weight: 800;
     color: var(--text-muted);
     opacity: 0.8;
+    white-space: nowrap;
+  }
+
+  .dynamic-hint {
+    position: absolute;
+    right: 0;
+    z-index: 5;
+    pointer-events: none;
   }
 
   .console-right {
-    flex: 1;
     display: flex;
     justify-content: flex-end;
     padding-left: 16px;
@@ -226,7 +242,7 @@
     height: 32px;
     border: 1px solid var(--outline-color);
     background: var(--bg-app);
-    transition: all 0.2s;
+    transition: all var(--transition-fast);
     position: relative;
     border-radius: var(--radius);
   }
@@ -263,11 +279,6 @@
     z-index: 5;
   }
 
-  .target-btn.active:hover {
-    filter: brightness(1.1);
-    box-shadow: 0 0 12px var(--q-bg);
-  }
-
   .target-btn.active .q-label,
   .target-btn.active .shortcut-badge {
     color: #ffffff;
@@ -279,5 +290,9 @@
 
   .dark .capture-console {
     background: #1a1f2b;
+  }
+
+  .is-focused {
+    border-color: var(--active-q-color);
   }
 </style>

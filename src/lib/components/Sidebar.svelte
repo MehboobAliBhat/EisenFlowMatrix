@@ -47,11 +47,22 @@
           <link.icon size={18} />
         </div>
         <span class="nav-label">{link.label}</span>
+        <span class="nav-count">{link.id === 'all' ? taskService.stats.total : taskService.getCountsByQuadrant(Number(link.id))}</span>
       </button>
     {/each}
   </nav>
 
   <div class="sidebar-footer">
+    <div class="velocity-container">
+      <div class="velocity-header">
+        <span class="velocity-label">DAILY VELOCITY</span>
+        <span class="velocity-value">{taskService.stats.percent}%</span>
+      </div>
+      <div class="velocity-bar-bg">
+        <div class="velocity-bar-fill" style="width: {taskService.stats.percent}%"></div>
+      </div>
+    </div>
+
     <div 
       class="trash-zone" 
       class:drag-over={isDragOverTrash}
@@ -94,14 +105,27 @@
     display: flex;
     flex-direction: column;
     position: relative;
-    transition: width 0.3s ease;
+    transition: width 0.4s var(--spring-easing);
     z-index: 30;
     height: 100%;
   }
 
   .sidebar-header { padding: 24px 20px 32px; overflow: hidden; }
-  .brand h2 { font-size: 16px; font-weight: 800; white-space: nowrap; color: var(--text-primary); }
-  .brand p { font-size: 9px; letter-spacing: 0.24em; font-weight: 600; color: var(--text-secondary); margin-top: 4px; }
+  .brand h2 { 
+    font-size: 16px; 
+    font-weight: 800; 
+    white-space: nowrap; 
+    color: var(--color-primary);
+    text-shadow: var(--primary-glow);
+  }
+  .brand p { 
+    font-size: 9px; 
+    letter-spacing: 0.24em; 
+    font-weight: 600; 
+    color: var(--color-primary); 
+    opacity: 0.7;
+    margin-top: 4px; 
+  }
 
   .sidebar-nav { flex: 1; padding: 0 8px; }
   .nav-item {
@@ -114,22 +138,41 @@
     color: var(--text-secondary);
     text-align: left;
     border: 1px solid transparent;
-    transition: all 0.2s;
+    transition: all var(--transition-base);
     border-radius: var(--radius);
+    position: relative;
+    overflow: hidden;
   }
 
   .nav-item.active {
     background: var(--item-bg-active) !important;
-    color: var(--text-primary);
-    font-weight: 700;
+    color: var(--item-color);
+    font-weight: 800;
     border-color: var(--item-color) !important;
+  }
+
+  .nav-item.active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 20%;
+    height: 60%;
+    width: 3px;
+    background: var(--item-color);
+    border-radius: 0 2px 2px 0;
   }
 
   .nav-icon-wrapper { display: flex; align-items: center; justify-content: center; opacity: 0.8; transition: opacity 0.2s; }
   .nav-item:hover .nav-icon-wrapper, .nav-item.active .nav-icon-wrapper { opacity: 1; }
 
-  .nav-label { font-size: 13px; font-weight: 600; transition: opacity 0.3s; white-space: nowrap; flex: 1; }
+  .nav-label { font-size: 13px; font-weight: 600; transition: opacity 0.3s, transform 0.3s; white-space: nowrap; flex: 1; }
   
+  :global(.sidebar-collapsed) .nav-label {
+    transform: translateX(-10px);
+    opacity: 0;
+    pointer-events: none;
+  }
+
   .nav-count {
     font-size: 10px;
     font-weight: 800;
@@ -137,9 +180,9 @@
     background: var(--border-color);
     border-radius: 4px;
     opacity: 0.6;
+    transition: all var(--transition-base);
   }
 
-  :global(.sidebar-collapsed) .nav-label, 
   :global(.sidebar-collapsed) .brand,
   :global(.sidebar-collapsed) .nav-count { 
     opacity: 0; 
@@ -153,6 +196,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    transition: all var(--transition-base);
   }
 
   .velocity-header {
@@ -188,7 +232,12 @@
   }
 
   :global(.sidebar-collapsed) .velocity-container {
-    display: none;
+    opacity: 0;
+    pointer-events: none;
+    height: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
   }
 
   .trash-zone {
@@ -199,7 +248,7 @@
     align-items: center;
     gap: 8px;
     color: var(--text-muted);
-    transition: all 0.2s;
+    transition: all var(--transition-base);
     margin-bottom: 8px;
     border-radius: var(--radius);
   }
@@ -208,7 +257,7 @@
   :global(.sidebar-collapsed) .trash-label { display: none; }
 
   .footer-actions { border-top: 1px solid var(--border-color); padding-top: 4px; }
-  .footer-btn { width: 100%; display: flex; align-items: center; gap: 16px; padding: 8px 16px; font-size: 13px; color: var(--text-muted); border: 1px solid transparent; transition: all 0.2s; border-radius: var(--radius); }
+  .footer-btn { width: 100%; display: flex; align-items: center; gap: 16px; padding: 8px 16px; font-size: 13px; color: var(--text-muted); border: 1px solid transparent; transition: all var(--transition-base); border-radius: var(--radius); }
   .footer-btn:hover { color: var(--color-error); }
   :global(.sidebar-collapsed) .footer-btn span { display: none; }
 
@@ -226,7 +275,7 @@
     color: var(--text-secondary);
     z-index: 40;
     opacity: 0;
-    transition: opacity 0.2s;
+    transition: opacity var(--transition-base);
   }
   .sidebar:hover .toggle-btn, :global(.sidebar-collapsed) .toggle-btn { opacity: 1; }
 </style>
