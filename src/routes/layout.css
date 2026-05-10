@@ -33,13 +33,25 @@
   --color-error-soft: rgba(255, 82, 82, 0.1);
   --color-primary: #448aff;
 
-  /* High-Density Layout Constants */
+  /* Global UI Constants */
+  --radius: 0px;
   --sidebar-width: 240px;
   --sidebar-collapsed-width: 70px;
   --header-height: 48px;
   --capture-height: 44px;
   --card-height: 38px;
 }
+
+/* Custom UI Modes */
+.rounded-ui {
+  --radius: 8px;
+}
+
+[data-accent="red"] { --color-primary: #ff5252; --color-primary-soft: rgba(255, 82, 82, 0.1); }
+[data-accent="blue"] { --color-primary: #448aff; --color-primary-soft: rgba(68, 138, 255, 0.1); }
+[data-accent="orange"] { --color-primary: #ffa726; --color-primary-soft: rgba(255, 167, 38, 0.1); }
+[data-accent="purple"] { --color-primary: #9c27b0; --color-primary-soft: rgba(156, 39, 176, 0.1); }
+[data-accent="green"] { --color-primary: #4caf50; --color-primary-soft: rgba(76, 175, 80, 0.1); }
 
 .dark {
   /* System Colors - Dark Mode (Industrial Slate) */
@@ -76,6 +88,15 @@ body, html {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Prevent transitions on load */
+.preload * {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -ms-transition: none !important;
+  -o-transition: none !important;
+  transition: none !important;
+}
+
 button {
   background: none;
   border: none;
@@ -96,7 +117,7 @@ input {
   --sidebar-width: var(--sidebar-collapsed-width);
 }
 
-:global(.sidebar-collapsed) aside {
+.sidebar-collapsed .sidebar {
   width: var(--sidebar-collapsed-width) !important;
 }
 
@@ -107,3 +128,37 @@ input {
 .justify-between { justify-content: space-between; }
 .flex-1 { flex: 1; }
 .overflow-hidden { overflow: hidden; }
+
+/* Universal Industrial Hover Behavior */
+.industrial-hover {
+  transition: background-color 0.2s, outline-color 0.2s !important;
+  outline: 1px solid transparent;
+  outline-offset: -2px;
+}
+
+.industrial-hover:hover {
+  outline-color: currentColor !important;
+  background-color: var(--bg-surface) !important;
+  z-index: 10;
+}
+
+.dark .industrial-hover:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Scrollbar Style */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
