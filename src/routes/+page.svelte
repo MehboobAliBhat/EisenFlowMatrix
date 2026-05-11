@@ -8,7 +8,7 @@
   function handleGlobalKeydown(e: KeyboardEvent) {
     const isInputActive = document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA';
 
-    // 1. Focus Capture with '/' (Restored original behavior)
+    // 1. Focus Capture with '/' 
     if (e.key === '/' && !isInputActive) {
       e.preventDefault();
       const captureInput = document.querySelector('.input-section input') as HTMLInputElement;

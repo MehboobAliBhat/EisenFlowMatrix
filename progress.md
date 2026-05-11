@@ -17,12 +17,12 @@
 - [x] **Keyboard Shortcuts:** Industrial mappings (`/` for Capture, `F` for Find/Search, `Alt+T` for Theme)
 - [x] **Mobile Optimization:** Responsive stacked matrix layout and touch-optimized components
 - [x] **Collapsible Sidebar:** Functional Icon-only mode with tablet auto-collapse logic
+- [ ] **Drag and Drop:** Native browser drag-and-drop improvements
 
 ## 🚧 Current (In Progress)
 - [ ] **Data Integrity:** Enhancing localStorage sync across multiple tabs/windows
 
 ## 🔮 Future Enhancements
-- [ ] **Drag and Drop:** Native browser drag-and-drop improvements
 - [ ] **Task Deadlines:** Reminders and due dates
 - [ ] **Productivity Stats:** Visualization charts
 - [ ] **Subtasks:** Nested tasks within cards
