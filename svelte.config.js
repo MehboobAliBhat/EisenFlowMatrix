@@ -11,7 +11,7 @@ const config = {
 			fallback: '404.html' // Dependent on your Apache config, but 404.html is standard for SPA
 		}),
 		paths: {
-			base: '/eisen'
+			base: '/EisenFlowMatrix'
 		}
 	}
 };
