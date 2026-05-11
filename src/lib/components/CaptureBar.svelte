@@ -187,14 +187,6 @@
     border-right: 1px solid var(--border-color);
   }
 
-  .charge-icon {
-    transition: opacity 0.1s linear;
-  }
-
-  .success-blink {
-    opacity: 0;
-  }
-
   .input-section {
     flex: 1;
     display: flex;
@@ -226,18 +218,6 @@
 
   .input-section input:focus {
     font-size: 15px;
-  }
-
-  .char-counter {
-    position: absolute;
-    right: 0;
-    bottom: -14px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 8px;
-    font-weight: 800;
-    color: var(--active-q-color);
-    opacity: 0.4;
-    transition: opacity 0.2s;
   }
 
   .kbd-hint {
@@ -326,10 +306,6 @@
 
   .target-btn.active .shortcut-badge {
     background: rgba(255,255,255,0.2);
-  }
-
-  .dark .capture-console {
-    background: #1a1f2b;
   }
 
   .is-focused {

@@ -199,10 +199,6 @@
     padding: 24px;
   }
 
-  .dark .empty-state {
-    border-color: rgba(255,255,255,0.1);
-  }
-
   .empty-icon {
     color: var(--q-color);
   }
@@ -223,8 +219,5 @@
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background: rgba(0,0,0,0.1);
-  }
-  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.1);
   }
 </style>

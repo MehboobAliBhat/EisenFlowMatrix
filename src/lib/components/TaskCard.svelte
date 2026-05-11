@@ -188,8 +188,4 @@
     color: var(--m-color, var(--color-primary)) !important;
     background: transparent !important;
   }
-
-  .delete:hover {
-    color: var(--color-error) !important;
-  }
 </style>
