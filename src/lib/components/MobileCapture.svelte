@@ -7,8 +7,14 @@
   let selectedQuadrant = $state(1);
   let inputElement = $state<HTMLTextAreaElement>();
 
-  onMount(() => {
-    inputElement?.focus();
+  $effect(() => {
+    if (taskService.isMobileCaptureOpen) {
+      // Small delay to allow the slide-up animation to start and DOM to be ready
+      const timer = setTimeout(() => {
+        inputElement?.focus();
+      }, 150);
+      return () => clearTimeout(timer);
+    }
   });
 
   function addTask() {
