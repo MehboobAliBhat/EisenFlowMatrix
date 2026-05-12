@@ -106,7 +106,7 @@
     flex-direction: column;
     position: relative;
     transition: width 0.4s var(--spring-easing);
-    z-index: 60;
+    z-index: 200;
     height: 100%;
   }
 
@@ -307,7 +307,7 @@
     align-items: center;
     justify-content: center;
     color: var(--text-secondary);
-    z-index: 100;
+    z-index: 300;
     opacity: 0;
     transition: opacity var(--transition-base);
     border-radius: var(--radius);

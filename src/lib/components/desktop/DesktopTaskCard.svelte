@@ -3,7 +3,7 @@
   import type { Task } from "$lib/types";
   import { QUADRANTS } from "$lib/config";
   import { taskService } from "$lib/tasks.svelte";
-  import Checkbox from "./Checkbox.svelte";
+  import Checkbox from "../Checkbox.svelte";
 
   let { task, isCompact = false }: { task: Task, isCompact?: boolean } = $props();
 
@@ -51,6 +51,10 @@
     if (e.key === 'Enter') saveEdit();
     if (e.key === 'Escape') cancelEdit();
   }
+
+  function deleteTask() {
+    taskService.deleteTask(task.id);
+  }
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -63,13 +67,11 @@
   style="--q-color: var({currentQuadrant?.var || '--color-primary'})"
 >
   <div class="task-left">
-    {#if !isCompact}
-      <Checkbox 
-        bind:checked={task.completed} 
-        color={currentQuadrant?.var ? `var(${currentQuadrant.var})` : 'var(--color-primary)'}
-        onchange={() => taskService.save()}
-      />
-    {/if}
+    <Checkbox 
+      bind:checked={task.completed} 
+      color={currentQuadrant?.var ? `var(${currentQuadrant.var})` : 'var(--color-primary)'}
+      onchange={() => taskService.save()}
+    />
     
     {#if isEditing}
       <input
@@ -91,20 +93,22 @@
     {/if}
   </div>
   
-  {#if !isCompact}
-    <div class="task-actions">
-      {#each otherQuadrants as target}
-        <button 
-          class="action-btn industrial-hover-subtle" 
-          onclick={() => taskService.moveTask(task.id, target.id)} 
-          title={target.id === 4 ? "Archive task" : `Move to ${target.label}`}
-          style="--m-color: var({target.var})"
-        >
-          <target.icon size={15} />
-        </button>
-      {/each}
-    </div>
-  {/if}
+  <div class="task-actions">
+    {#each otherQuadrants as target}
+      <button 
+        class="action-btn industrial-hover-subtle" 
+        onclick={() => taskService.moveTask(task.id, target.id)} 
+        title={target.id === 4 ? "Archive task" : `Move to ${target.label}`}
+        style="--m-color: var({target.var})"
+      >
+        <target.icon size={13} />
+      </button>
+    {/each}
+    <div class="action-divider"></div>
+    <button class="action-btn delete-btn" onclick={deleteTask} title="Delete Task">
+      <Trash2 size={13} />
+    </button>
+  </div>
 </div>
 
 <style>
@@ -120,24 +124,11 @@
     cursor: grab;
     transition: all var(--transition-base);
     border-radius: var(--radius);
-    position: relative;
-  }
-
-  .task-card.compact {
-    height: 24px;
-    padding: 0 6px;
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.03);
-    border-style: solid;
-  }
-
-  .task-card.compact .task-text {
-    font-size: 10px;
-    font-weight: 500;
   }
 
   .task-card:hover {
     border-color: var(--q-color);
+    z-index: 10;
   }
 
   .task-card:active {
@@ -147,13 +138,13 @@
   .task-left {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     flex: 1;
     min-width: 0;
   }
 
   .task-text {
-    font-size: var(--font-size-task, 12px);
+    font-size: 12px;
     font-weight: 600;
     color: var(--text-primary);
     white-space: nowrap;
@@ -172,11 +163,10 @@
     background: transparent;
     border: none;
     outline: none;
-    font-size: var(--font-size-task, 12px);
+    font-size: 12px;
     font-weight: 600;
     color: var(--text-primary);
     padding: 0;
-    margin: 0;
     width: 100%;
   }
 
@@ -187,7 +177,8 @@
 
   .task-actions {
     display: flex;
-    gap: 2px;
+    align-items: center;
+    gap: 1px;
     opacity: 0;
     transition: opacity var(--transition-base);
   }
@@ -197,7 +188,8 @@
   }
 
   .action-btn {
-    padding: 8px;
+    width: 24px;
+    height: 24px;
     color: var(--text-muted);
     border: none;
     background: transparent;
@@ -205,11 +197,23 @@
     align-items: center;
     justify-content: center;
     border-radius: var(--radius);
-    transition: color var(--transition-fast);
+    transition: all var(--transition-fast);
   }
 
   .industrial-hover-subtle:hover {
     color: var(--m-color, var(--color-primary)) !important;
-    background: transparent !important;
+    background: var(--outline-color) !important;
+  }
+
+  .delete-btn:hover {
+    color: var(--color-error) !important;
+    background: var(--color-error-soft) !important;
+  }
+
+  .action-divider {
+    width: 1px;
+    height: 12px;
+    background: var(--border-color);
+    margin: 0 4px;
   }
 </style>
