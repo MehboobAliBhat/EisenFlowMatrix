@@ -20,17 +20,30 @@
 </script>
 
 {#if taskService.isSettingsOpen}
-  <div class="mobile-modal-backdrop" transition:fade onclick={close}>
+  <div 
+    class="mobile-modal-backdrop" 
+    transition:fade 
+    onclick={close}
+    onkeydown={e => e.key === 'Escape' && close()}
+    role="button"
+    tabindex="-1"
+    aria-label="Close settings overlay"
+  >
     <div 
       class="mobile-modal-content" 
       transition:fly={{ y: '100%', duration: 400, easing: t => t * t }}
       onclick={e => e.stopPropagation()}
+      onkeydown={e => e.stopPropagation()}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="mobile-settings-title"
+      tabindex="-1"
     >
       <header class="modal-header">
-        <div class="drag-handle"></div>
+        <div class="drag-handle" aria-hidden="true"></div>
         <div class="header-main">
-          <h3>Settings</h3>
-          <button class="close-icon" onclick={close}><X size={24} /></button>
+          <h3 id="mobile-settings-title">Settings</h3>
+          <button class="close-icon" onclick={close} aria-label="Close settings"><X size={24} /></button>
         </div>
       </header>
 
@@ -45,6 +58,8 @@
               class="mobile-toggle" 
               class:active={taskService.darkMode}
               onclick={() => taskService.toggleTheme()}
+              aria-label={taskService.darkMode ? "Disable dark mode" : "Enable dark mode"}
+              aria-pressed={taskService.darkMode}
             >
               <div class="toggle-handle"></div>
             </button>
@@ -81,12 +96,13 @@
                 class="mobile-theme-card" 
                 class:active={themeService.activeThemeId === theme.id}
                 onclick={() => { themeService.activeThemeId = theme.id; themeService.applyTheme(); }}
+                aria-label={`Select ${theme.name} theme`}
               >
                 <div class="preview-strip">
-                  <div style="background: {theme.colors.q1}"></div>
-                  <div style="background: {theme.colors.q2}"></div>
-                  <div style="background: {theme.colors.q3}"></div>
-                  <div style="background: {theme.colors.q4}"></div>
+                  <div style="background: {theme.colors.q1}" aria-hidden="true"></div>
+                  <div style="background: {theme.colors.q2}" aria-hidden="true"></div>
+                  <div style="background: {theme.colors.q3}" aria-hidden="true"></div>
+                  <div style="background: {theme.colors.q4}" aria-hidden="true"></div>
                 </div>
                 <span class="name">{theme.name}</span>
                 {#if themeService.activeThemeId === theme.id}
@@ -102,7 +118,7 @@
           <div class="visual-presets">
              <div class="preset-item">
                 <span class="label">Corner Radius</span>
-                <div class="mobile-segmented">
+                <div class="mobile-segmented" role="radiogroup" aria-label="Corner Radius">
                    {#each [
                     { label: 'Sharp', val: 0 },
                     { label: 'Soft', val: 12 }
@@ -110,6 +126,8 @@
                     <button 
                       class:active={themeService.activeTheme.layout.radius === opt.val}
                       onclick={() => { themeService.activeTheme.layout.radius = opt.val; themeService.applyTheme(); }}
+                      role="radio"
+                      aria-checked={themeService.activeTheme.layout.radius === opt.val}
                     >
                       {opt.label}
                     </button>

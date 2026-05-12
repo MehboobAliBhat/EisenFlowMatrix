@@ -117,12 +117,6 @@
     opacity: 0.6;
   }
 
-  .back-link {
-    padding: 8px;
-    margin-left: -8px;
-    color: var(--q-color);
-  }
-
   .purge-btn {
     font-size: 9px;
     font-weight: 900;

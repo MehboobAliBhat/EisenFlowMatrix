@@ -58,12 +58,18 @@
           bind:checked={task.completed} 
           color={currentQuadrant?.var ? `var(${currentQuadrant.var})` : 'var(--color-primary)'}
           onchange={() => taskService.save()}
-          size={20}
         />
       </div>
     {/if}
     
-    <div class="text-area" onclick={startEditing}>
+    <div 
+      class="text-area" 
+      onclick={startEditing}
+      onkeydown={e => (e.key === 'Enter' || e.key === ' ') && startEditing()}
+      role="button"
+      tabindex="0"
+      aria-label={`Edit task: ${task.text}`}
+    >
       {#if isEditing}
         <input
           bind:this={editInput}

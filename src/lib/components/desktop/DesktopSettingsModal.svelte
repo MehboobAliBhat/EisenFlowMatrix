@@ -44,16 +44,29 @@
 </script>
 
 {#if taskService.isSettingsOpen}
-  <div class="modal-backdrop" transition:fade onclick={close}>
+  <div 
+    class="modal-backdrop" 
+    transition:fade 
+    onclick={close}
+    onkeydown={e => e.key === 'Escape' && close()}
+    role="button"
+    tabindex="-1"
+    aria-label="Close modal backdrop"
+  >
     <div 
       class="modal-content" 
       transition:fly={{ y: 20, duration: 300 }}
       onclick={e => e.stopPropagation()}
+      onkeydown={e => e.stopPropagation()}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+      tabindex="-1"
     >
       <header class="modal-header">
         <div class="header-title">
           <LayoutGrid size={18} />
-          <h3>System Configuration</h3>
+          <h3 id="modal-title">System Configuration</h3>
         </div>
         <button class="close-btn" onclick={close} aria-label="Close settings">
           <X size={20} />
@@ -71,6 +84,8 @@
                 class="toggle-switch" 
                 class:active={taskService.darkMode}
                 onclick={() => taskService.toggleTheme()}
+                aria-label={taskService.darkMode ? "Disable dark mode" : "Enable dark mode"}
+                aria-pressed={taskService.darkMode}
               >
                 <div class="switch-handle"></div>
               </button>
@@ -83,9 +98,10 @@
               <div class="header-actions">
                 <label class="action-icon-btn" title="Import Theme">
                   <Upload size={14} />
+                  <span class="sr-only">Import Theme</span>
                   <input type="file" accept=".json" onchange={handleImport} hidden />
                 </label>
-                <button class="action-icon-btn" onclick={createNewTheme} title="Create New">
+                <button class="action-icon-btn" onclick={createNewTheme} title="Create New" aria-label="Create new theme">
                   <Plus size={14} />
                 </button>
               </div>
@@ -97,19 +113,20 @@
                   <button 
                     class="theme-select-btn" 
                     onclick={() => { themeService.activeThemeId = theme.id; themeService.applyTheme(); }}
+                    aria-label={`Select ${theme.name} theme`}
                   >
                     <span class="theme-name">{theme.name}</span>
                     <div class="theme-preview">
-                      <div style="background: {theme.colors.q1}"></div>
-                      <div style="background: {theme.colors.q2}"></div>
-                      <div style="background: {theme.colors.q3}"></div>
-                      <div style="background: {theme.colors.q4}"></div>
+                      <div style="background: {theme.colors.q1}" aria-hidden="true"></div>
+                      <div style="background: {theme.colors.q2}" aria-hidden="true"></div>
+                      <div style="background: {theme.colors.q3}" aria-hidden="true"></div>
+                      <div style="background: {theme.colors.q4}" aria-hidden="true"></div>
                     </div>
                   </button>
                   <div class="theme-actions">
-                    <button onclick={() => themeService.exportTheme(theme)} title="Export"><Download size={12}/></button>
+                    <button onclick={() => themeService.exportTheme(theme)} title="Export" aria-label={`Export ${theme.name} theme`}><Download size={12}/></button>
                     {#if !['industrial-classic', 'modern-soft', 'laws-of-ux', 'material-m3', 'nord-polar', 'github-primer'].includes(theme.id)}
-                      <button class="delete" onclick={() => deleteTheme(theme.id)}><Trash2 size={12}/></button>
+                      <button class="delete" onclick={() => deleteTheme(theme.id)} title="Delete theme" aria-label={`Delete ${theme.name} theme`}><Trash2 size={12}/></button>
                     {/if}
                   </div>
                 </div>
@@ -156,8 +173,9 @@
             </div>
             
             <div class="editor-row">
-              <span class="label">Display Name</span>
+              <label for="theme-display-name" class="label">Display Name</label>
               <input 
+                id="theme-display-name"
                 type="text" 
                 bind:value={themeService.activeTheme.name} 
                 oninput={() => themeService.updateTheme(themeService.activeTheme)}
@@ -166,31 +184,31 @@
 
             <div class="color-editor-grid">
               <div class="color-field">
-                <label>Primary</label>
-                <input type="color" bind:value={themeService.activeTheme.colors.primary} oninput={() => themeService.applyTheme()} />
+                <label for="color-primary">Primary</label>
+                <input id="color-primary" type="color" bind:value={themeService.activeTheme.colors.primary} oninput={() => themeService.applyTheme()} />
               </div>
               <div class="color-field">
-                <label>Do (Q1)</label>
-                <input type="color" bind:value={themeService.activeTheme.colors.q1} oninput={() => themeService.applyTheme()} />
+                <label for="color-q1">Do (Q1)</label>
+                <input id="color-q1" type="color" bind:value={themeService.activeTheme.colors.q1} oninput={() => themeService.applyTheme()} />
               </div>
               <div class="color-field">
-                <label>Plan (Q2)</label>
-                <input type="color" bind:value={themeService.activeTheme.colors.q2} oninput={() => themeService.applyTheme()} />
+                <label for="color-q2">Plan (Q2)</label>
+                <input id="color-q2" type="color" bind:value={themeService.activeTheme.colors.q2} oninput={() => themeService.applyTheme()} />
               </div>
               <div class="color-field">
-                <label>Delegate (Q3)</label>
-                <input type="color" bind:value={themeService.activeTheme.colors.q3} oninput={() => themeService.applyTheme()} />
+                <label for="color-q3">Delegate (Q3)</label>
+                <input id="color-q3" type="color" bind:value={themeService.activeTheme.colors.q3} oninput={() => themeService.applyTheme()} />
               </div>
               <div class="color-field">
-                <label>Archive (Q4)</label>
-                <input type="color" bind:value={themeService.activeTheme.colors.q4} oninput={() => themeService.applyTheme()} />
+                <label for="color-q4">Archive (Q4)</label>
+                <input id="color-q4" type="color" bind:value={themeService.activeTheme.colors.q4} oninput={() => themeService.applyTheme()} />
               </div>
             </div>
 
             <div class="preset-selectors">
               <div class="preset-group">
-                <label>Visual Roundness</label>
-                <div class="segmented-control">
+                <span class="label">Visual Roundness</span>
+                <div class="segmented-control" role="radiogroup" aria-label="Visual Roundness">
                   {#each [
                     { label: 'Sharp', val: 0 },
                     { label: 'Slight', val: 4 },
@@ -199,6 +217,8 @@
                     <button 
                       class:active={themeService.activeTheme.layout.radius === opt.val}
                       onclick={() => { themeService.activeTheme.layout.radius = opt.val; themeService.applyTheme(); }}
+                      role="radio"
+                      aria-checked={themeService.activeTheme.layout.radius === opt.val}
                     >
                       {opt.label}
                     </button>
@@ -207,8 +227,8 @@
               </div>
 
               <div class="preset-group">
-                <label>UI Density</label>
-                <div class="segmented-control">
+                <span class="label">UI Density</span>
+                <div class="segmented-control" role="radiogroup" aria-label="UI Density">
                   {#each [
                     { label: 'Compact', gap: 1, pad: 6, h: 32, fs: 11 },
                     { label: 'Standard', gap: 1, pad: 14, h: 46, fs: 14 },
@@ -223,6 +243,8 @@
                         themeService.activeTheme.layout.fontSize = opt.fs;
                         themeService.applyTheme(); 
                       }}
+                      role="radio"
+                      aria-checked={themeService.activeTheme.layout.cardPadding === opt.pad}
                     >
                       {opt.label}
                     </button>
@@ -242,6 +264,17 @@
 {/if}
 
 <style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
   .modal-backdrop {
     position: fixed;
     inset: 0;
