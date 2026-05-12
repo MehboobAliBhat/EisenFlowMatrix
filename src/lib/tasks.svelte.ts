@@ -7,12 +7,18 @@ class TaskService {
   isSidebarCollapsed = $state(browser ? localStorage.getItem('eisen-sidebar-collapsed') === 'true' : false);
   isSettingsOpen = $state(false);
   isMobileCaptureOpen = $state(false);
+  isMobile = $state(false);
   activeFilter = $state('all');
   searchQuery = $state('');
 
   constructor() {
     if (browser) {
       this.load();
+      const mql = window.matchMedia('(max-width: 768px)');
+      this.isMobile = mql.matches;
+      mql.addEventListener('change', (e) => {
+        this.isMobile = e.matches;
+      });
     }
   }
 

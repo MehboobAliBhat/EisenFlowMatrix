@@ -21,7 +21,7 @@
     // 2. Focus Search with 'f'
     if (e.key.toLowerCase() === 'f' && !isInputActive) {
       e.preventDefault();
-      const searchInput = document.querySelector('.top-search-input') as HTMLInputElement;
+      const searchInput = document.querySelector('.search-input') as HTMLInputElement;
       searchInput?.focus();
     }
 

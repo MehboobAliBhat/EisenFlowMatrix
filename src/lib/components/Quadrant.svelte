@@ -10,7 +10,7 @@
 
   let isDragOver = $state(false);
   const tasks = $derived(taskService.getTasksByQuadrant(config.id));
-  const isMiniMode = $derived(taskService.activeFilter === 'all');
+  const isMiniMode = $derived(taskService.activeFilter === 'all' && taskService.isMobile);
 
   function handleZoom() {
     if (isMiniMode) {
