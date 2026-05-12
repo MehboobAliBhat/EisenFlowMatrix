@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { X } from "lucide-svelte";
   import type { QuadrantConfig } from "$lib/types";
   import { taskService } from "$lib/tasks.svelte";
   import TaskCard from "./TaskCard.svelte";
@@ -9,6 +10,17 @@
 
   let isDragOver = $state(false);
   const tasks = $derived(taskService.getTasksByQuadrant(config.id));
+  const isMiniMode = $derived(taskService.activeFilter === 'all');
+
+  function handleZoom() {
+    if (isMiniMode) {
+      taskService.activeFilter = config.id.toString();
+    }
+  }
+
+  function goBack() {
+    taskService.activeFilter = 'all';
+  }
 
   function handleDragOver(e: DragEvent) {
     e.preventDefault();
@@ -35,22 +47,31 @@
   }
 </script>
 
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <section 
   class="quadrant" 
   style="--q-color: var({config.var}); --q-soft: var({config.soft}); --q-header: var({config.var}-header); --q-border: color-mix(in srgb, var({config.var}), transparent 60%)"
   class:dim={config.id === 4}
   class:drag-over={isDragOver}
+  class:mini-mode={isMiniMode}
   ondragover={handleDragOver}
   ondragleave={handleDragLeave}
   ondrop={handleDrop}
+  onclick={handleZoom}
 >
   <header class="quadrant-header">
     <div class="q-title">
+      {#if !isMiniMode}
+        <button class="back-link mobile-only" onclick={goBack} aria-label="Back to Matrix">
+          <X size={16} />
+        </button>
+      {/if}
       <config.icon size={16} stroke-width={3} />
       <h3>{config.title} <span class="q-count" class:overloaded={tasks.length > 8}>[{tasks.length}]</span></h3>
     </div>
     <div class="q-meta">
-      {#if config.id === 4 && tasks.length > 0}
+      {#if config.id === 4 && tasks.length > 0 && !isMiniMode}
         <button class="purge-btn industrial-hover" onclick={purgeArchive}>Purge</button>
       {/if}
       <span class="sub-label">{config.sub}</span>
@@ -58,16 +79,22 @@
   </header>
 
   <div class="task-list custom-scrollbar">
-    {#each tasks as task (task.id)}
+    {#each isMiniMode ? tasks.slice(0, 3) : tasks as task (task.id)}
       <div animate:flip={{ duration: 300 }}>
-        <TaskCard {task} />
+        <TaskCard {task} isCompact={isMiniMode} />
       </div>
     {/each}
     
     {#if tasks.length === 0}
       <div class="empty-state" in:fade={{ duration: 200 }}>
-        <span class="empty-icon"><config.icon size={24} stroke-width={1} /></span>
+        <span class="empty-icon"><config.icon size={isMiniMode ? 16 : 24} stroke-width={1} /></span>
         <span class="empty-text">NO ITEMS IN {config.label}</span>
+      </div>
+    {/if}
+
+    {#if isMiniMode && tasks.length > 3}
+      <div class="more-indicator">
+        +{tasks.length - 3} MORE
       </div>
     {/if}
   </div>
@@ -87,27 +114,54 @@
     overflow: hidden;
   }
 
-
-  .quadrant.dim {
-    opacity: 0.7;
-    filter: grayscale(0.5);
+  .quadrant.mini-mode {
+    cursor: pointer;
+    padding: 8px;
   }
 
-  .quadrant.drag-over {
-    border: 2px solid var(--q-color);
-    background: var(--q-header);
-    z-index: 5;
+  .quadrant.mini-mode:hover {
+    filter: brightness(1.05);
+    border-color: var(--q-color);
   }
 
-  .quadrant-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--q-header);
-    margin: -12px -12px 12px;
-    padding: 10px 12px;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
+  .quadrant.mini-mode .quadrant-header {
+    margin: -8px -8px 8px;
+    padding: 6px 8px;
   }
+
+  .quadrant.mini-mode .q-title h3 {
+    font-size: 11px;
+  }
+
+  .quadrant.mini-mode .sub-label {
+    display: none;
+  }
+
+  .back-link {
+    background: transparent;
+    border: none;
+    color: var(--q-color);
+    padding: 4px;
+    margin-left: -8px;
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .mobile-only {
+      display: flex !important;
+    }
+  }
+
+  .more-indicator {
+    font-size: 9px;
+    font-weight: 900;
+    color: var(--q-color);
+    text-align: center;
+    padding: 4px;
+    letter-spacing: 0.1em;
+    opacity: 0.6;
+  }
+/* ... rest of existing styles ... */
 
   @media (max-width: 640px) {
     .quadrant-header {

@@ -4,6 +4,9 @@
   import CaptureBar from "$lib/components/CaptureBar.svelte";
   import Matrix from "$lib/components/Matrix.svelte";
   import SettingsModal from "$lib/components/SettingsModal.svelte";
+  import BottomNav from "$lib/components/BottomNav.svelte";
+  import FAB from "$lib/components/FAB.svelte";
+  import MobileCapture from "$lib/components/MobileCapture.svelte";
 
   function handleGlobalKeydown(e: KeyboardEvent) {
     const isInputActive = document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA';
@@ -37,18 +40,26 @@
 <svelte:window onkeydown={handleGlobalKeydown} />
 
 <div class="app-container">
-  <Sidebar />
+  <div class="desktop-only">
+    <Sidebar />
+  </div>
 
   <main class="main-content">
     <Topbar />
 
     <div class="content-area">
-      <CaptureBar />
+      <div class="desktop-only">
+        <CaptureBar />
+      </div>
       <Matrix />
     </div>
+
+    <BottomNav />
+    <FAB />
   </main>
 
   <SettingsModal />
+  <MobileCapture />
 </div>
 
 <style>
@@ -58,6 +69,16 @@
     width: 100vw;
     overflow: hidden;
     background-color: var(--bg-app);
+  }
+
+  .desktop-only {
+    display: contents;
+  }
+
+  @media (max-width: 768px) {
+    .desktop-only {
+      display: none;
+    }
   }
 
   .main-content {

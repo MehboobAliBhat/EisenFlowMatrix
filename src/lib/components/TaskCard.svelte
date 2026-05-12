@@ -5,14 +5,20 @@
   import { taskService } from "$lib/tasks.svelte";
   import Checkbox from "./Checkbox.svelte";
 
-  let { task }: { task: Task } = $props();
+  let { task, isCompact = false }: { task: Task, isCompact?: boolean } = $props();
 
   const currentQuadrant = $derived(QUADRANTS.find(q => q.id === task.quadrant));
   const otherQuadrants = $derived(QUADRANTS.filter(q => q.id !== task.quadrant));
 
   let isEditing = $state(false);
-  let editText = $state(task.text);
-  let editInput: HTMLInputElement;
+  let editText = $state('');
+  let editInput = $state<HTMLInputElement>();
+
+  $effect(() => {
+    if (isEditing) {
+      editText = task.text;
+    }
+  });
 
   function handleDragStart(e: DragEvent) {
     if (isEditing) return;
@@ -51,16 +57,19 @@
 <div 
   class="task-card industrial-hover" 
   class:editing={isEditing}
+  class:compact={isCompact}
   draggable={!isEditing}
   ondragstart={handleDragStart}
   style="--q-color: var({currentQuadrant?.var || '--color-primary'})"
 >
   <div class="task-left">
-    <Checkbox 
-      bind:checked={task.completed} 
-      color={currentQuadrant?.var ? `var(${currentQuadrant.var})` : 'var(--color-primary)'}
-      onchange={() => taskService.save()}
-    />
+    {#if !isCompact}
+      <Checkbox 
+        bind:checked={task.completed} 
+        color={currentQuadrant?.var ? `var(${currentQuadrant.var})` : 'var(--color-primary)'}
+        onchange={() => taskService.save()}
+      />
+    {/if}
     
     {#if isEditing}
       <input
@@ -82,18 +91,20 @@
     {/if}
   </div>
   
-  <div class="task-actions">
-    {#each otherQuadrants as target}
-      <button 
-        class="action-btn industrial-hover-subtle" 
-        onclick={() => taskService.moveTask(task.id, target.id)} 
-        title={target.id === 4 ? "Archive task" : `Move to ${target.label}`}
-        style="--m-color: var({target.var})"
-      >
-        <target.icon size={15} />
-      </button>
-    {/each}
-  </div>
+  {#if !isCompact}
+    <div class="task-actions">
+      {#each otherQuadrants as target}
+        <button 
+          class="action-btn industrial-hover-subtle" 
+          onclick={() => taskService.moveTask(task.id, target.id)} 
+          title={target.id === 4 ? "Archive task" : `Move to ${target.label}`}
+          style="--m-color: var({target.var})"
+        >
+          <target.icon size={15} />
+        </button>
+      {/each}
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -110,6 +121,19 @@
     transition: all var(--transition-base);
     border-radius: var(--radius);
     position: relative;
+  }
+
+  .task-card.compact {
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.03);
+    border-style: solid;
+  }
+
+  .task-card.compact .task-text {
+    font-size: 10px;
+    font-weight: 500;
   }
 
   .task-card:hover {

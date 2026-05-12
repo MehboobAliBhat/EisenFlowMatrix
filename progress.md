@@ -20,6 +20,13 @@
 - [ ] **Drag and Drop:** Native browser drag-and-drop improvements
 
 ## 🚧 Current (In Progress)
+- [x] **Mobile Transformation (UX Focused):**
+    - [x] Bottom Navigation Bar (Fitts's Law)
+    - [x] Floating Action Button (FAB) for Task Capture (Von Restorff Effect)
+    - [x] Mobile-optimized Quick Capture overlay
+    - [x] Responsive Topbar (Search icon expansion)
+    - [x] Adaptive Sidebar (Hide on mobile, replace with Bottom Nav)
+    - [x] **2x2 Matrix Mobile Grid:** Overview + Zoom interaction logic
 - [ ] **Data Integrity:** Enhancing localStorage sync across multiple tabs/windows
 
 ## 🔮 Future Enhancements

@@ -6,6 +6,7 @@ class TaskService {
   darkMode = $state(browser ? (localStorage.getItem('eisen-theme') === 'dark' || (!localStorage.getItem('eisen-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) : false);
   isSidebarCollapsed = $state(browser ? localStorage.getItem('eisen-sidebar-collapsed') === 'true' : false);
   isSettingsOpen = $state(false);
+  isMobileCaptureOpen = $state(false);
   activeFilter = $state('all');
   searchQuery = $state('');
 

@@ -76,6 +76,29 @@
           </div>
         </section>
 
+        <!-- Task Data Management -->
+        <section class="settings-section">
+          <h4>Task Data Management</h4>
+          <div class="data-actions-grid">
+            <button class="data-action-btn" onclick={() => taskService.exportData()}>
+              <Download size={16} />
+              <span>Export Tasks (.json)</span>
+            </button>
+            <label class="data-action-btn">
+              <Upload size={16} />
+              <span>Import Tasks (.json)</span>
+              <input type="file" accept=".json" onchange={(e) => {
+                const target = e.target as HTMLInputElement;
+                if (!target.files?.length) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => taskService.importData(ev.target?.result as string);
+                reader.readAsText(target.files[0]);
+                target.value = '';
+              }} hidden />
+            </label>
+          </div>
+        </section>
+
         <!-- Theme Preset Selection -->
         <section class="settings-section">
           <div class="section-header">
@@ -270,6 +293,7 @@
     padding: 32px;
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     display: grid;
     grid-template-columns: 320px 1fr;
     gap: 40px;
@@ -292,6 +316,9 @@
     margin-bottom: 16px;
     border-left: 3px solid var(--color-primary);
     padding-left: 8px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .section-header {
@@ -422,71 +449,55 @@
 
   .color-editor-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 8px;
     margin-bottom: 24px;
   }
-
   .color-field {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
     align-items: center;
+    min-width: 0;
   }
 
   .color-field label {
-    font-size: 9px;
+    font-size: 8px;
     font-weight: 800;
     text-transform: uppercase;
     color: var(--text-muted);
+    white-space: nowrap;
   }
 
   .color-field input[type="color"] {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     border: none;
     background: none;
     cursor: pointer;
+    padding: 0;
   }
-
-  /* Preset Selectors */
-  .preset-selectors {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
-
-  .preset-group {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .preset-group label {
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    letter-spacing: 0.05em;
-  }
-
   .segmented-control {
     display: flex;
     background: var(--bg-sidebar);
     border: 1px solid var(--border-color);
     padding: 2px;
     gap: 2px;
+    width: 100%;
   }
 
   .segmented-control button {
     flex: 1;
-    padding: 8px 12px;
-    font-size: 11px;
+    padding: 8px 4px;
+    font-size: 10px;
     font-weight: 800;
     text-transform: uppercase;
     color: var(--text-secondary);
     transition: all 0.2s;
     border: 1px solid transparent;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .segmented-control button:hover:not(.active) {
@@ -548,5 +559,65 @@
     text-transform: uppercase;
     letter-spacing: 0.1em;
     transition: opacity 0.2s;
+  }
+
+  /* Data Management Styles */
+  .data-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .data-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px;
+    background: var(--bg-sidebar);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .data-action-btn:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+  }
+
+  /* Responsive Fixes */
+  @media (max-width: 768px) {
+    .settings-body {
+      grid-template-columns: 1fr;
+      padding: 20px;
+      gap: 32px;
+    }
+
+    .modal-content {
+      height: 95vh;
+      width: 100%;
+      border-radius: 20px 20px 0 0;
+      border-bottom: none;
+      align-self: flex-end;
+    }
+
+    .editor-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .editor-row input {
+      width: 100%;
+    }
+
+    .data-actions-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
